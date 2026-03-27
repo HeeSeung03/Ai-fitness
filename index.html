@@ -434,6 +434,49 @@
   .empty-history p { font-size: 15px; }
 
   /* SESSION DETAIL MODAL */
+  /* ====== 작성 중 복구 모달 ====== */
+  .draft-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(6px);
+    z-index: 9000;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .draft-overlay.show { display: flex; }
+  .draft-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    width: 100%; max-width: 380px;
+    padding: 32px 28px;
+    text-align: center;
+    animation: modalIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .draft-icon { font-size: 40px; margin-bottom: 14px; }
+  .draft-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 2px;
+    color: var(--text); margin-bottom: 8px;
+  }
+  .draft-desc { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 8px; }
+  .draft-meta { font-size: 11px; color: var(--text3); margin-bottom: 24px; }
+  .draft-btns { display: flex; gap: 10px; }
+  .draft-btn-yes {
+    flex: 1; padding: 13px; border: none; border-radius: 10px;
+    background: var(--accent); color: #0a0a0f;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s;
+  }
+  .draft-btn-yes:hover { background: #d8ff52; }
+  .draft-btn-no {
+    flex: 1; padding: 13px; border: 1px solid var(--border);
+    border-radius: 10px; background: var(--surface2); color: var(--text2);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s;
+  }
+  .draft-btn-no:hover { border-color: var(--accent3); color: var(--accent3); }
+
   .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.75);
@@ -488,6 +531,77 @@
 
   .modal-set-num { color: var(--text3); min-width: 40px; }
   .modal-set-data { color: var(--text); }
+
+  /* 세션 편집 모달 */
+  #edit-modal-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  #edit-modal-overlay.show { display: flex; }
+  #edit-modal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; width: 100%; max-width: 560px;
+    max-height: 88vh; overflow-y: auto; padding: 24px;
+    animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .edit-ex-block { margin-bottom: 20px; border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .edit-ex-header { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .edit-ex-name-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 7px 10px; border-radius: 7px;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 13px; outline: none;
+  }
+  .edit-ex-name-input:focus { border-color: var(--accent); }
+  .edit-cat-select {
+    appearance: none; -webkit-appearance: none;
+    background: rgba(200,245,66,0.1); color: var(--accent);
+    border: 1px solid rgba(200,245,66,0.2); border-radius: 16px;
+    padding: 4px 10px; font-size: 11px; font-weight: 500;
+    font-family: 'Noto Sans KR', sans-serif; cursor: pointer; outline: none;
+  }
+  .edit-set-row { display: grid; grid-template-columns: 44px 1fr 1fr 28px; gap: 6px; align-items: center; margin-bottom: 6px; }
+  .edit-set-label { font-size: 11px; color: var(--text3); text-align: center; }
+  .edit-set-input {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 6px 8px; border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    outline: none; width: 100%; text-align: center;
+  }
+  .edit-set-input:focus { border-color: var(--accent); }
+  .edit-del-set {
+    background: none; border: none; color: var(--text3);
+    cursor: pointer; font-size: 14px; padding: 0;
+    transition: color 0.15s;
+  }
+  .edit-del-set:hover { color: var(--accent3); }
+  .edit-add-set-btn {
+    background: none; border: 1px dashed var(--border); color: var(--text3);
+    padding: 5px; border-radius: 6px; cursor: pointer; font-size: 11px;
+    width: 100%; margin-top: 4px; font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.15s;
+  }
+  .edit-add-set-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .edit-del-ex-btn {
+    background: none; border: 1px solid var(--border); color: var(--accent3);
+    padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 11px;
+    font-family: 'Noto Sans KR', sans-serif; flex-shrink: 0;
+  }
+  .edit-add-ex-btn {
+    width: 100%; padding: 10px; background: var(--surface2);
+    border: 1px dashed var(--border); color: var(--text2);
+    border-radius: 8px; cursor: pointer; font-size: 13px;
+    font-family: 'Noto Sans KR', sans-serif; margin-top: 4px;
+    transition: all 0.15s;
+  }
+  .edit-add-ex-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .edit-save-btn {
+    width: 100%; padding: 13px; background: var(--accent); color: #0a0a0f;
+    border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: 'Noto Sans KR', sans-serif; margin-top: 14px;
+    transition: all 0.2s;
+  }
+  .edit-save-btn:hover { background: #d8ff52; }
 
   /* ====== TAB 3: AI 피드백 ====== */
   .feedback-layout {
@@ -1151,6 +1265,65 @@
   .section-title-row {
     display: flex; align-items: center; margin-bottom: 4px;
   }
+  /* 세션 불러오기 모달 */
+  #load-session-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  #load-session-overlay.show { display: flex; }
+
+  .load-modal-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; width: 100%; max-width: 520px;
+    max-height: 82vh; overflow-y: auto; padding: 24px;
+    animation: modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .load-modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 18px;
+  }
+  .load-modal-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px;
+  }
+
+  .load-session-item {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px; cursor: pointer;
+    transition: all 0.18s; background: var(--surface2);
+  }
+  .load-session-item:hover {
+    border-color: var(--accent); background: rgba(200,245,66,0.05);
+    transform: translateY(-1px);
+  }
+  .load-session-item-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+  .load-session-date { font-size: 13px; font-weight: 700; color: var(--text); }
+  .load-session-badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px;
+    border-radius: 10px; border: 1px solid;
+  }
+  .load-session-exercises {
+    font-size: 12px; color: var(--text2); line-height: 1.5;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .load-session-meta {
+    font-size: 11px; color: var(--text3); margin-top: 4px;
+  }
+  .load-empty {
+    text-align: center; padding: 32px 0; color: var(--text3); font-size: 13px;
+  }
+
+  .btn-load-session {
+    background: none; border: 1px dashed var(--border);
+    color: var(--text2); padding: 8px 14px; border-radius: 8px;
+    font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.18s; white-space: nowrap;
+  }
+  .btn-load-session:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
@@ -1236,6 +1409,9 @@
       <button class="btn-add-exercise" onclick="addExercise()">
         <span>＋</span> 운동 추가
       </button>
+      <button class="btn-load-session" onclick="openLoadSessionModal()" title="이전 세션 불러오기">
+        📂 세션 불러오기
+      </button>
       <button class="btn-save-session" onclick="saveSession()">
         💾 세션 저장
       </button>
@@ -1277,10 +1453,6 @@
               세션을 저장하면 PR이 기록됩니다
             </div>
           </div>
-          <div class="reco-section">
-            <div class="reco-title">💡 추천 운동</div>
-            <div class="reco-list" id="reco-list"></div>
-          </div>
         </div>
       </div>
     </div>
@@ -1291,6 +1463,37 @@
 <!-- SESSION DETAIL MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
   <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- 세션 불러오기 모달 -->
+<div id="load-session-overlay" onclick="closeLoadSessionModal(event)">
+  <div class="load-modal-box">
+    <div class="load-modal-header">
+      <div class="load-modal-title">📂 세션 불러오기</div>
+      <button onclick="closeLoadSessionModalDirect()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">불러올 세션을 선택하면 현재 기록지에 운동 종목과 세트가 그대로 채워집니다.</div>
+    <div id="load-session-list"></div>
+  </div>
+</div>
+
+<!-- SESSION EDIT MODAL -->
+<div id="edit-modal-overlay" onclick="closeEditModal(event)">
+  <div id="edit-modal-box"></div>
+</div>
+
+<!-- 작성 중 복구 모달 -->
+<div class="draft-overlay" id="draft-overlay">
+  <div class="draft-box">
+    <div class="draft-icon">📝</div>
+    <div class="draft-title">작성 중인 기록 발견</div>
+    <div class="draft-desc">이전에 저장하지 않은<br>운동 기록이 남아 있습니다.</div>
+    <div class="draft-meta" id="draft-meta"></div>
+    <div class="draft-btns">
+      <button class="draft-btn-no" onclick="discardDraft()">새로 시작</button>
+      <button class="draft-btn-yes" onclick="restoreDraft()">이어서 작성 ✏️</button>
+    </div>
+  </div>
 </div>
 
 <!-- FLOATING CHAT BUTTON -->
@@ -1350,20 +1553,18 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyD5Rzyl01548BmGByfP9-VcHlmu6ngd4fc",
-  authDomain: "ai-fitness-test.firebaseapp.com",
-  projectId: "ai-fitness-test",
-  storageBucket: "ai-fitness-test.firebasestorage.app",
-  messagingSenderId: "933560260327",
-  appId: "1:933560260327:web:3087e587a7bf97e7577442"
-};
 // ==================== STATE ====================
 let sessions = JSON.parse(localStorage.getItem('fitcore_sessions') || '[]');
 let currentExercises = [];
 let exerciseCounter = 0;
 let chatHistory = [];
 let currentDayType = 'push';
+let currentGoal = localStorage.getItem('fitcore_goal') || 'bulk';
+let currentTab = 'record';
+let autoAnalysisDone = false;
+let chatModalOpen = false;
+let pendingGoal = null;
+let editSession = null;
 
 const EXERCISES_DB = {
   '가슴': ['벤치프레스', '인클라인 벤치프레스', '디클라인 벤치프레스', '케이블 플라이', '딥스', '푸시업'],
@@ -1380,15 +1581,16 @@ const ALL_EXERCISES = Object.values(EXERCISES_DB).flat();
 document.addEventListener('DOMContentLoaded', () => {
   setToday();
   renderQuickChips();
-  addExercise();
   initChat();
   initGoal();
   initDayType();
   renderHistory();
   renderMetrics();
   renderPR();
-  renderRecommendations();
   renderVolumeChart();
+
+  // 작성 중 복구 확인
+  checkDraftRecovery();
 });
 
 function setToday() {
@@ -1425,11 +1627,62 @@ function addExerciseNamed(name) {
   }, 100);
 }
 
+// ==================== 사용자 정의 카테고리 기억 ====================
+function getUserCategories() {
+  return JSON.parse(localStorage.getItem('fitcore_user_cats') || '{}');
+}
+
+function saveUserCategory(name, category) {
+  if (!name || !name.trim()) return;
+  const cats = getUserCategories();
+  cats[name.trim()] = category;
+  localStorage.setItem('fitcore_user_cats', JSON.stringify(cats));
+}
+
 function getCategory(name) {
+  if (!name || !name.trim()) return '기타';
+
+  // 1순위: 사용자가 직접 지정한 카테고리
+  const userCats = getUserCategories();
+  if (userCats[name.trim()]) return userCats[name.trim()];
+
+  // 2순위: 기본 DB에서 자동 감지
   for (const [cat, exs] of Object.entries(EXERCISES_DB)) {
     if (exs.includes(name)) return cat;
   }
+
+  // 3순위: 과거 세션에서 이 종목의 카테고리 찾기
+  for (const s of sessions) {
+    for (const ex of s.exercises) {
+      if (ex.name === name.trim() && ex.category && ex.category !== '기타') {
+        // 발견하면 저장해두고 반환
+        saveUserCategory(name.trim(), ex.category);
+        return ex.category;
+      }
+    }
+  }
+
   return '기타';
+}
+
+function updateExerciseName(exIdx, val) {
+  currentExercises[exIdx].name = val;
+  const autoCat = getCategory(val);
+  if (!currentExercises[exIdx].category || currentExercises[exIdx].category === '기타') {
+    currentExercises[exIdx].category = autoCat;
+    const cards = document.querySelectorAll('.exercise-card');
+    const select = cards[exIdx]?.querySelector('.category-select');
+    if (select) select.value = autoCat;
+  }
+  saveDraft();
+}
+
+function updateCategory(exIdx, val) {
+  currentExercises[exIdx].category = val;
+  // 사용자가 직접 선택한 카테고리를 기억
+  const name = currentExercises[exIdx].name;
+  if (name && name.trim()) saveUserCategory(name.trim(), val);
+  saveDraft();
 }
 
 function renderExerciseList() {
@@ -1444,7 +1697,8 @@ function renderExerciseList() {
         <div class="card-num">${String(exIdx + 1).padStart(2, '0')}</div>
         <input class="exercise-name-input" placeholder="운동 이름 입력..."
           value="${ex.name}"
-          oninput="updateExerciseName(${exIdx}, this.value)">
+          oninput="updateExerciseName(${exIdx}, this.value)"
+          onblur="saveDraft()">
         <select class="category-select" onchange="updateCategory(${exIdx}, this.value)">
           ${['가슴','등','어깨','하체','이두','삼두','기타'].map(cat =>
             `<option value="${cat}" ${(ex.category||getCategory(ex.name))===cat?'selected':''}>${cat}</option>`
@@ -1480,13 +1734,15 @@ function renderSetRow(exIdx, setIdx, set) {
       <div class="input-wrapper">
         <input type="number" min="0" step="0.5" placeholder="0"
           value="${set.weight}" class="${isPR ? 'pr-highlight' : ''}"
-          oninput="updateSet(${exIdx}, ${setIdx}, 'weight', this.value)">
+          oninput="updateSet(${exIdx}, ${setIdx}, 'weight', this.value)"
+          onblur="saveDraft()">
         <span class="input-unit">kg</span>
       </div>
       <div class="input-wrapper">
         <input type="number" min="0" step="1" placeholder="0"
           value="${set.reps}"
-          oninput="updateSet(${exIdx}, ${setIdx}, 'reps', this.value)">
+          oninput="updateSet(${exIdx}, ${setIdx}, 'reps', this.value)"
+          onblur="saveDraft()">
         <span class="input-unit">회</span>
       </div>
       <button class="btn-del-set" onclick="deleteSet(${exIdx}, ${setIdx})">✕</button>
@@ -1494,23 +1750,9 @@ function renderSetRow(exIdx, setIdx, set) {
   `;
 }
 
-function updateExerciseName(exIdx, val) {
-  currentExercises[exIdx].name = val;
-  const autoCat = getCategory(val);
-  if (!currentExercises[exIdx].category || currentExercises[exIdx].category === '기타') {
-    currentExercises[exIdx].category = autoCat;
-    const cards = document.querySelectorAll('.exercise-card');
-    const select = cards[exIdx]?.querySelector('.category-select');
-    if (select) select.value = autoCat;
-  }
-}
-
-function updateCategory(exIdx, val) {
-  currentExercises[exIdx].category = val;
-}
-
 function updateSet(exIdx, setIdx, field, val) {
   currentExercises[exIdx].sets[setIdx][field] = val;
+  saveDraft();
 }
 
 function addSet(exIdx) {
@@ -1518,6 +1760,7 @@ function addSet(exIdx) {
   const container = document.getElementById(`sets-${exIdx}`);
   const setIdx = currentExercises[exIdx].sets.length - 1;
   container.insertAdjacentHTML('beforeend', renderSetRow(exIdx, setIdx, { weight: '', reps: '' }));
+  saveDraft();
 }
 
 function deleteSet(exIdx, setIdx) {
@@ -1525,14 +1768,97 @@ function deleteSet(exIdx, setIdx) {
   currentExercises[exIdx].sets.splice(setIdx, 1);
   const container = document.getElementById(`sets-${exIdx}`);
   container.innerHTML = currentExercises[exIdx].sets.map((s, i) => renderSetRow(exIdx, i, s)).join('');
+  saveDraft();
 }
 
 function deleteExercise(exIdx) {
   currentExercises.splice(exIdx, 1);
   renderExerciseList();
+  saveDraft();
 }
 
 // ==================== SAVE SESSION ====================
+// ==================== 작성 중 자동저장 ====================
+function saveDraft() {
+  const date = document.getElementById('session-date')?.value || '';
+  const hasContent = currentExercises.some(ex =>
+    ex.name || ex.sets.some(s => s.weight || s.reps)
+  );
+  if (!hasContent) {
+    localStorage.removeItem('fitcore_draft');
+    return;
+  }
+  const draft = {
+    date,
+    dayType: currentDayType,
+    exercises: currentExercises,
+    savedAt: new Date().toISOString()
+  };
+  localStorage.setItem('fitcore_draft', JSON.stringify(draft));
+}
+
+// 모바일 백그라운드 전환 시 강제 저장
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveDraft();
+});
+window.addEventListener('pagehide', () => saveDraft());
+window.addEventListener('beforeunload', () => saveDraft());
+
+function checkDraftRecovery() {
+  const raw = localStorage.getItem('fitcore_draft');
+  if (!raw) { addExercise(); return; }
+
+  try {
+    const draft = JSON.parse(raw);
+    const hasContent = draft.exercises?.some(ex =>
+      ex.name || ex.sets?.some(s => s.weight || s.reps)
+    );
+    if (!hasContent) { localStorage.removeItem('fitcore_draft'); addExercise(); return; }
+
+    // 저장 시각 표시
+    const savedAt = new Date(draft.savedAt);
+    const timeStr = `${savedAt.getMonth()+1}/${savedAt.getDate()} ${String(savedAt.getHours()).padStart(2,'0')}:${String(savedAt.getMinutes()).padStart(2,'0')}`;
+    const exNames = draft.exercises.filter(e => e.name).map(e => e.name).join(', ');
+    document.getElementById('draft-meta').textContent =
+      `${timeStr} 작성 · ${exNames || '운동 기록 있음'}`;
+
+    document.getElementById('draft-overlay').classList.add('show');
+  } catch(e) {
+    localStorage.removeItem('fitcore_draft');
+    addExercise();
+  }
+}
+
+function restoreDraft() {
+  document.getElementById('draft-overlay').classList.remove('show');
+  const raw = localStorage.getItem('fitcore_draft');
+  if (!raw) { addExercise(); return; }
+
+  try {
+    const draft = JSON.parse(raw);
+    // 날짜 복원
+    if (draft.date) document.getElementById('session-date').value = draft.date;
+    // 운동 타입 복원
+    if (draft.dayType) { currentDayType = draft.dayType; initDayType(); }
+    // 운동 목록 복원
+    currentExercises = draft.exercises || [];
+    exerciseCounter = currentExercises.length;
+    renderExerciseList();
+    showToast('✅ 이전 기록을 불러왔습니다!');
+  } catch(e) {
+    addExercise();
+  }
+}
+
+function discardDraft() {
+  document.getElementById('draft-overlay').classList.remove('show');
+  localStorage.removeItem('fitcore_draft');
+  currentExercises = [];
+  exerciseCounter = 0;
+  addExercise();
+  showToast('새로 시작합니다');
+}
+
 function saveSession() {
   const date = document.getElementById('session-date').value;
   if (!date) { showToast('날짜를 선택하세요'); return; }
@@ -1552,13 +1878,21 @@ function saveSession() {
     dayType: currentDayType,
     exercises: validExercises.map(ex => ({
       name: ex.name,
-      category: getCategory(ex.name),
+      category: ex.category && ex.category !== '기타' ? ex.category : getCategory(ex.name),
       sets: ex.sets.filter(s => s.weight || s.reps)
     }))
   };
 
+  // 이 세션의 카테고리를 모두 기억
+  session.exercises.forEach(ex => {
+    if (ex.name && ex.category && ex.category !== '기타') {
+      saveUserCategory(ex.name, ex.category);
+    }
+  });
+
   sessions.unshift(session);
   localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
+  localStorage.removeItem('fitcore_draft');
 
   // reset
   currentExercises = [];
@@ -1885,6 +2219,9 @@ function openModal(sessionId) {
     <button onclick="deleteSession(${s.id})" style="margin-top:16px;background:none;border:1px solid var(--border);color:var(--accent3);padding:8px 16px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;">
       🗑 이 세션 삭제
     </button>
+    <button onclick="closeModalBtn(); openEditModal(${s.id})" style="margin-top:8px;margin-left:8px;background:none;border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;">
+      ✏️ 이 기록 수정하기
+    </button>
   `;
   document.getElementById('modal-overlay').classList.add('show');
 }
@@ -1897,6 +2234,89 @@ function closeModalBtn() {
   document.getElementById('modal-overlay').classList.remove('show');
 }
 
+// ==================== 세션 불러오기 ====================
+function openLoadSessionModal() {
+  const list = document.getElementById('load-session-list');
+
+  if (!sessions.length) {
+    list.innerHTML = `<div class="load-empty">💪 저장된 세션이 없습니다.<br>운동을 기록하고 저장해보세요!</div>`;
+    document.getElementById('load-session-overlay').classList.add('show');
+    return;
+  }
+
+  const dayColors = { push:'#ff6b6b', pull:'#6b9fff', legs:'#a06bff', free:'#c8f542' };
+
+  list.innerHTML = sessions.slice(0, 30).map(s => {
+    const dayInfo = DAY_TYPE_INFO[s.dayType] || { label: '운동', icon: '💪' };
+    const color = dayColors[s.dayType] || 'var(--text3)';
+    const totalSets = s.exercises.reduce((sum, e) => sum + e.sets.length, 0);
+    const cal = estimateSessionCalories(s);
+    const exNames = s.exercises.map(e => e.name).join(' · ');
+
+    return `
+      <div class="load-session-item" onclick="loadSession(${s.id})">
+        <div class="load-session-item-header">
+          <div class="load-session-date">📅 ${formatDate(s.date)}</div>
+          <span class="load-session-badge" style="color:${color};border-color:${color}40;background:${color}12;">
+            ${dayInfo.icon} ${dayInfo.label}
+          </span>
+        </div>
+        <div class="load-session-exercises">${exNames}</div>
+        <div class="load-session-meta">${s.exercises.length}종목 · ${totalSets}세트 · ${cal}kcal</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('load-session-overlay').classList.add('show');
+}
+
+function loadSession(sessionId) {
+  const s = sessions.find(s => s.id === sessionId);
+  if (!s) return;
+
+  // 현재 기록이 있으면 확인
+  const hasContent = currentExercises.some(ex =>
+    ex.name || ex.sets.some(set => set.weight || set.reps)
+  );
+
+  if (hasContent) {
+    if (!confirm(`현재 작성 중인 기록이 있습니다.\n세션을 불러오면 기존 내용이 대체됩니다.\n계속하시겠습니까?`)) return;
+  }
+
+  // 세션 데이터 불러오기
+  currentExercises = s.exercises.map(ex => ({
+    id: ++exerciseCounter,
+    name: ex.name,
+    category: ex.category || getCategory(ex.name),
+    sets: ex.sets.map(set => ({ weight: set.weight || '', reps: set.reps || '' }))
+  }));
+
+  // 날짜는 오늘로 설정 (새 기록이므로)
+  setToday();
+
+  // dayType 복원
+  if (s.dayType) {
+    currentDayType = s.dayType;
+    initDayType();
+  }
+
+  renderExerciseList();
+  closeLoadSessionModalDirect();
+  switchTab('record');
+  showToast(`✅ '${formatDate(s.date)}' 세션을 불러왔습니다!`);
+
+  // 스크롤 최상단으로
+  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+}
+
+function closeLoadSessionModal(e) {
+  if (e.target.id === 'load-session-overlay') closeLoadSessionModalDirect();
+}
+
+function closeLoadSessionModalDirect() {
+  document.getElementById('load-session-overlay').classList.remove('show');
+}
+
 function deleteSession(id) {
   sessions = sessions.filter(s => s.id !== id);
   localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
@@ -1906,6 +2326,140 @@ function deleteSession(id) {
   renderPR();
   renderVolumeChart();
   showToast('세션이 삭제되었습니다');
+}
+
+// ==================== SESSION EDIT ====================
+
+
+function openEditModal(sessionId) {
+  editSession = JSON.parse(JSON.stringify(sessions.find(s => s.id === sessionId)));
+  if (!editSession) return;
+  renderEditModal();
+  document.getElementById('edit-modal-overlay').classList.add('show');
+}
+
+function renderEditModal() {
+  const s = editSession;
+  const cats = ['가슴','등','어깨','하체','이두','삼두','기타'];
+  const dayTypes = Object.entries(DAY_TYPE_INFO).map(([k,v]) =>
+    `<option value="${k}" ${s.dayType===k?'selected':''}>${v.icon} ${v.label}</option>`
+  ).join('');
+
+  const exBlocks = s.exercises.map((ex, ei) => `
+    <div class="edit-ex-block" id="edit-ex-${ei}">
+      <div class="edit-ex-header">
+        <input class="edit-ex-name-input" value="${ex.name}" placeholder="운동 이름"
+          oninput="editSession.exercises[${ei}].name=this.value">
+        <select class="edit-cat-select" onchange="editSession.exercises[${ei}].category=this.value">
+          ${cats.map(c=>`<option value="${c}" ${ex.category===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+        <button class="edit-del-ex-btn" onclick="editDelExercise(${ei})">✕</button>
+      </div>
+      <div class="edit-set-header" style="display:grid;grid-template-columns:44px 1fr 1fr 28px;gap:6px;margin-bottom:6px;font-size:10px;color:var(--text3);text-align:center;">
+        <div>세트</div><div>무게(kg)</div><div>횟수(회)</div><div></div>
+      </div>
+      ${ex.sets.map((set, si) => `
+        <div class="edit-set-row" id="edit-set-${ei}-${si}">
+          <div class="edit-set-label">SET ${si+1}</div>
+          <input class="edit-set-input" type="number" min="0" step="0.5" value="${set.weight||''}" placeholder="0"
+            oninput="editSession.exercises[${ei}].sets[${si}].weight=this.value">
+          <input class="edit-set-input" type="number" min="0" step="1" value="${set.reps||''}" placeholder="0"
+            oninput="editSession.exercises[${ei}].sets[${si}].reps=this.value">
+          <button class="edit-del-set" onclick="editDelSet(${ei},${si})">✕</button>
+        </div>
+      `).join('')}
+      <button class="edit-add-set-btn" onclick="editAddSet(${ei})">+ 세트 추가</button>
+    </div>
+  `).join('');
+
+  document.getElementById('edit-modal-box').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;">기록 수정</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">📅 ${formatDate(s.date)}</div>
+      </div>
+      <button onclick="closeEditModalDirect()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:120px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">날짜</div>
+        <input type="date" value="${s.date}" onchange="editSession.date=this.value"
+          style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;">
+      </div>
+      <div style="flex:1;min-width:120px;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">운동 타입</div>
+        <select onchange="editSession.dayType=this.value"
+          style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;appearance:none;">
+          ${dayTypes}
+        </select>
+      </div>
+    </div>
+
+    <div id="edit-ex-list">${exBlocks}</div>
+    <button class="edit-add-ex-btn" onclick="editAddExercise()">＋ 운동 추가</button>
+    <button class="edit-save-btn" onclick="saveEditSession()">💾 수정 저장</button>
+  `;
+}
+
+function editDelExercise(ei) {
+  if (editSession.exercises.length <= 1) { showToast('운동은 최소 1개 필요합니다'); return; }
+  editSession.exercises.splice(ei, 1);
+  renderEditModal();
+}
+
+function editAddExercise() {
+  editSession.exercises.push({ name: '', category: '기타', sets: [{ weight: '', reps: '' }] });
+  renderEditModal();
+  setTimeout(() => {
+    const box = document.getElementById('edit-modal-box');
+    box.scrollTop = box.scrollHeight;
+  }, 50);
+}
+
+function editAddSet(ei) {
+  editSession.exercises[ei].sets.push({ weight: '', reps: '' });
+  renderEditModal();
+}
+
+function editDelSet(ei, si) {
+  if (editSession.exercises[ei].sets.length <= 1) return;
+  editSession.exercises[ei].sets.splice(si, 1);
+  renderEditModal();
+}
+
+function saveEditSession() {
+  if (!editSession) return;
+  const idx = sessions.findIndex(s => s.id === editSession.id);
+  if (idx === -1) return;
+
+  // 빈 운동 제거
+  editSession.exercises = editSession.exercises.filter(ex =>
+    ex.name && ex.sets.some(s => s.weight || s.reps)
+  );
+  if (!editSession.exercises.length) { showToast('운동을 하나 이상 입력하세요'); return; }
+
+  // 빈 세트 제거
+  editSession.exercises.forEach(ex => {
+    ex.sets = ex.sets.filter(s => s.weight || s.reps);
+    if (!ex.sets.length) ex.sets = [{ weight: '', reps: '' }];
+  });
+
+  sessions[idx] = editSession;
+  sessions.sort((a, b) => b.date.localeCompare(a.date));
+  localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
+  closeEditModalDirect();
+  renderHistory(); renderMetrics(); renderPR();
+  showToast('✅ 수정이 저장되었습니다!');
+}
+
+function closeEditModal(e) {
+  if (e.target.id === 'edit-modal-overlay') closeEditModalDirect();
+}
+
+function closeEditModalDirect() {
+  document.getElementById('edit-modal-overlay').classList.remove('show');
+  editSession = null;
 }
 
 // ==================== VOLUME CHART ====================
@@ -1948,7 +2502,7 @@ function getLast7Days() {
 }
 
 // ==================== 자동 AI 루틴 분석 ====================
-let autoAnalysisDone = false;
+
 
 async function autoAnalyzeRoutine() {
   if (!sessions.length || autoAnalysisDone) return;
@@ -2226,9 +2780,7 @@ function addRecoExercise(name) {
   showToast(`✅ '${name}' 추가됨!`);
 }
 
-// ==================== AI CHAT ====================
 // ==================== 목표 설정 ====================
-let currentGoal = localStorage.getItem('fitcore_goal') || 'bulk';
 
 const GOAL_PROMPTS = {
   bulk: `현재 사용자의 목표는 【벌크업】입니다.
@@ -2277,7 +2829,7 @@ const GOAL_INFO = {
   lean:  { label: '⚡ 린매스업', cls: 'lean',  btnCls: 'active-lean' },
 };
 
-let pendingGoal = null;
+
 
 const GOAL_CONFIRM_INFO = {
   bulk: { icon: '🏋️', title: '벌크업', desc: '고중량·근비대 중심으로\nAI 코칭 방향이 변경됩니다.\n목표를 변경하시겠습니까?', btnColor: '#f5a742' },
@@ -2351,7 +2903,6 @@ function getSessionContext() {
 }
 
 // ==================== FLOATING CHAT ====================
-let chatModalOpen = false;
 
 function toggleChatModal() {
   chatModalOpen = !chatModalOpen;
@@ -2463,7 +3014,6 @@ async function sendChat() {
 }
 
 // ==================== UTILS ====================
-let currentTab = 'record';
 
 function switchTab(tab) {
   currentTab = tab;
@@ -2474,7 +3024,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-btn')[tabMap[tab]].classList.add('active');
 
   if (tab === 'history') { renderHistory(); }
-  if (tab === 'feedback') { renderMetrics(); renderPR(); renderRecommendations(); autoAnalyzeRoutine(); }
+  if (tab === 'feedback') { renderMetrics(); renderPR(); autoAnalyzeRoutine(); }
 }
 
 function openCurrentGuide() {
@@ -2511,7 +3061,6 @@ const GUIDE_CONTENT = {
       { num:'01', title:'자동 루틴 분석', desc:'탭에 처음 진입하면 최근 운동 기록을 자동 분석합니다.\n루틴 패턴 · 과부하 여부 · 강도 · 개선 포인트를\nAI 코칭 채팅창에 자동 출력합니다.' },
       { num:'02', title:'운동 분석 지표', desc:'🔥 예상 칼로리 — 이번 세션 소모 추정치\n🔄 점진적 과부하 — 이전 대비 운동량 변화\n⚡ 운동 강도 — 세트당 평균 볼륨 변화\n📅 주간 빈도 — 이번 주 운동 횟수' },
       { num:'03', title:'종목별 최고 중량', desc:'기록된 운동 중 최고 중량 순 6개가 표시됩니다.\n[▼ 더보기]로 전체 종목을 확인할 수 있습니다.' },
-      { num:'04', title:'추천 운동', desc:'최근 루틴에서 빠진 운동을 자동 추천합니다.\n클릭하면 기록 탭에 바로 종목이 추가됩니다.' },
     ],
     tip: '💡 <strong>Tip:</strong> 목표를 변경하면 AI가 해당 목표에 맞게 자동 재분석합니다.'
   },
@@ -3043,5 +3592,6 @@ function autoClassifyDayType() {
   }
 }
 </script>
+
 </body>
 </html>
