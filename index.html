@@ -1032,7 +1032,7 @@
     letter-spacing: 1px; margin-bottom: 10px;
   }
   .day-cards {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
   }
   .day-card {
     background: var(--surface2); border: 1px solid var(--border);
@@ -1050,14 +1050,16 @@
   .day-card.active-pull .day-card-name { color: #6b9fff; }
   .day-card.active-legs { border-color: #a06bff; background: rgba(160,107,255,0.08); }
   .day-card.active-legs .day-card-name { color: #a06bff; }
+  .day-card.active-running { border-color: #ff9f43; background: rgba(255,159,67,0.08); }
+  .day-card.active-running .day-card-name { color: #ff9f43; }
   .day-card.active-free { border-color: var(--accent); background: rgba(200,245,66,0.08); }
   .day-card.active-free .day-card-name { color: var(--accent); }
 
   @media (max-width: 480px) {
-    .day-cards { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .day-cards { grid-template-columns: repeat(5, 1fr); gap: 4px; }
     .day-card { padding: 10px 4px; }
     .day-card-icon { font-size: 16px; }
-    .day-card-name { font-size: 10px; }
+    .day-card-name { font-size: 9px; }
   }
 
   /* COMPARISON MODAL */
@@ -1324,6 +1326,66 @@
     transition: all 0.18s; white-space: nowrap;
   }
   .btn-load-session:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ====== 러닝 기록지 ====== */
+  .running-area { display: none; }
+  .running-area.show { display: block; }
+  .running-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding: 16px 20px;
+    background: rgba(255,159,67,0.08);
+    border: 1px solid rgba(255,159,67,0.25); border-radius: 12px;
+  }
+  .running-header-icon { font-size: 28px; }
+  .running-header-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: #ff9f43; }
+  .running-header-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .running-laps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .running-lap-header {
+    display: grid; grid-template-columns: 36px 1fr 1fr 1fr 36px;
+    gap: 10px; padding: 0 18px 6px;
+    font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .running-lap {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+    display: grid; grid-template-columns: 36px 1fr 1fr 1fr 36px;
+    gap: 10px; align-items: center; animation: fadeIn 0.2s ease;
+  }
+  .running-lap:hover { border-color: rgba(255,159,67,0.35); }
+  .running-lap-num { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--text3); text-align: center; }
+  .running-input-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .running-input {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 9px 8px; border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    text-align: center; outline: none; transition: all 0.15s;
+  }
+  .running-input:focus { border-color: #ff9f43; background: rgba(255,159,67,0.04); box-shadow: 0 0 0 3px rgba(255,159,67,0.08); }
+  .running-time-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .running-time-row { display: flex; align-items: center; gap: 4px; }
+  .running-time-sep { font-size: 13px; color: var(--text3); font-family: 'JetBrains Mono', monospace; padding-top: 1px; }
+  .running-input-unit { font-size: 10px; color: var(--text3); text-align: center; margin-top: 2px; }
+  .running-del { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 16px; transition: color 0.2s; }
+  .running-del:hover { color: var(--accent3); }
+  .running-summary {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 18px;
+    display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .running-sum-item { text-align: center; flex: 1; min-width: 60px; }
+  .running-sum-val { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #ff9f43; }
+  .running-sum-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .btn-add-lap {
+    width: 100%; padding: 12px; background: none;
+    border: 1px dashed rgba(255,159,67,0.3); color: rgba(255,159,67,0.7);
+    border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px;
+    cursor: pointer; transition: all 0.2s; margin-bottom: 8px;
+  }
+  .btn-add-lap:hover { border-color: #ff9f43; color: #ff9f43; background: rgba(255,159,67,0.04); }
+  @media (max-width: 480px) {
+    .running-lap, .running-lap-header { grid-template-columns: 28px 1fr 1fr 1fr 28px; gap: 6px; padding-left: 12px; padding-right: 12px; }
+  }
+
 </style>
 </head>
 <body>
@@ -1386,8 +1448,12 @@
           <div class="day-card-name">Legs Day</div>
         </div>
         <div class="day-card" id="day-btn-free" onclick="setDayType('free')">
+          <div class="day-card-icon">✨</div>
+          <div class="day-card-name">Free</div>
+        </div>
+        <div class="day-card" id="day-btn-running" onclick="setDayType('running')">
           <div class="day-card-icon">🏃</div>
-          <div class="day-card-name">자유</div>
+          <div class="day-card-name">Running</div>
         </div>
       </div>
     </div>
@@ -1403,18 +1469,68 @@
       <div class="quick-chips" id="quick-chips"></div>
     </div>
 
-    <div class="exercise-list" id="exercise-list"></div>
+    <!-- 웨이트 기록지 -->
+    <div id="weight-area">
+      <div class="exercise-list" id="exercise-list"></div>
+      <div class="add-exercise-area">
+        <button class="btn-add-exercise" onclick="addExercise()">
+          <span>＋</span> 운동 추가
+        </button>
+        <button class="btn-load-session" onclick="openLoadSessionModal()" title="이전 세션 불러오기">
+          📂 세션 불러오기
+        </button>
+        <button class="btn-save-session" onclick="saveSession()">
+          💾 세션 저장
+        </button>
+      </div>
+    </div>
 
-    <div class="add-exercise-area">
-      <button class="btn-add-exercise" onclick="addExercise()">
-        <span>＋</span> 운동 추가
-      </button>
-      <button class="btn-load-session" onclick="openLoadSessionModal()" title="이전 세션 불러오기">
-        📂 세션 불러오기
-      </button>
-      <button class="btn-save-session" onclick="saveSession()">
-        💾 세션 저장
-      </button>
+    <!-- 러닝 기록지 -->
+    <div class="running-area" id="running-area">
+      <div class="running-header">
+        <div class="running-header-icon">🏃</div>
+        <div>
+          <div class="running-header-title">러닝 기록</div>
+          <div class="running-header-sub">구간별 거리와 시간을 입력하세요</div>
+        </div>
+      </div>
+
+      <!-- 요약 -->
+      <div class="running-summary" id="running-summary">
+        <div class="running-sum-item">
+          <div class="running-sum-val" id="run-total-km">0.0</div>
+          <div class="running-sum-label">총 거리 (km)</div>
+        </div>
+        <div class="running-sum-item">
+          <div class="running-sum-val" id="run-total-time">00:00</div>
+          <div class="running-sum-label">총 시간</div>
+        </div>
+        <div class="running-sum-item">
+          <div class="running-sum-val" id="run-avg-pace">--'--"</div>
+          <div class="running-sum-label">평균 페이스</div>
+        </div>
+      </div>
+
+      <!-- 구간 헤더 -->
+      <div class="running-lap-header">
+        <div></div>
+        <div style="text-align:center;">거리 (km)</div>
+        <div style="text-align:center;">분</div>
+        <div style="text-align:center;">초</div>
+        <div></div>
+      </div>
+
+      <div class="running-laps" id="running-laps"></div>
+      <button class="btn-add-lap" onclick="addRunningLap()">＋ 구간 추가</button>
+
+      <div class="add-exercise-area" style="margin-top:4px;">
+        <button class="btn-load-session" onclick="openLoadSessionModal()" title="이전 세션 불러오기">
+          📂 세션 불러오기
+        </button>
+        <button class="btn-save-session" onclick="saveSession()">
+          💾 세션 저장
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1863,6 +1979,30 @@ function saveSession() {
   const date = document.getElementById('session-date').value;
   if (!date) { showToast('날짜를 선택하세요'); return; }
 
+  // ── 러닝 세션 저장 ──
+  if (currentDayType === 'running') {
+    const validLaps = currentRunningLaps.filter(l => l.km || l.min || l.sec);
+    if (!validLaps.length) { showToast('구간을 하나 이상 입력하세요'); return; }
+
+    const session = {
+      id: Date.now(), date,
+      dayType: 'running',
+      runningLaps: validLaps,
+      exercises: [] // 호환성 유지
+    };
+    sessions.unshift(session);
+    localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
+    localStorage.removeItem('fitcore_draft');
+
+    currentRunningLaps = [];
+    renderRunningLaps();
+    renderHistory(); renderMetrics(); renderPR(); renderVolumeChart();
+    showToast('✅ Running 세션 저장 완료!');
+    showCompareModal(session);
+    return;
+  }
+
+  // ── 웨이트 세션 저장 ──
   const validExercises = currentExercises.filter(ex =>
     ex.name && ex.sets.some(s => s.weight || s.reps)
   );
@@ -1908,28 +2048,132 @@ function saveSession() {
   showCompareModal(session);
 }
 
+// ==================== 러닝 기록 ====================
+let currentRunningLaps = []; // [{ km, min, sec }]
+
+function addRunningLap() {
+  currentRunningLaps.push({ km: '', min: '', sec: '' });
+  renderRunningLaps();
+}
+
+function deleteRunningLap(idx) {
+  currentRunningLaps.splice(idx, 1);
+  renderRunningLaps();
+}
+
+function updateRunningLap(idx, field, val) {
+  currentRunningLaps[idx][field] = val;
+  updateRunningSummary();
+}
+
+function renderRunningLaps() {
+  const container = document.getElementById('running-laps');
+  if (!container) return;
+
+  container.innerHTML = currentRunningLaps.map((lap, i) => `
+    <div class="running-lap">
+      <div class="running-lap-num">${i + 1}</div>
+      <div class="running-input-wrap">
+        <input class="running-input" type="number" min="0" step="0.01"
+          placeholder="0.00"
+          value="${lap.km}"
+          oninput="updateRunningLap(${i}, 'km', this.value)">
+        <div class="running-input-unit">km</div>
+      </div>
+      <div class="running-input-wrap">
+        <input class="running-input" type="number" min="0" max="999"
+          placeholder="00"
+          value="${lap.min}"
+          oninput="updateRunningLap(${i}, 'min', this.value)">
+        <div class="running-input-unit">분</div>
+      </div>
+      <div class="running-input-wrap">
+        <input class="running-input" type="number" min="0" max="59"
+          placeholder="00"
+          value="${lap.sec}"
+          oninput="updateRunningLap(${i}, 'sec', this.value)">
+        <div class="running-input-unit">초</div>
+      </div>
+      <button class="running-del" onclick="deleteRunningLap(${i})">✕</button>
+    </div>
+  `).join('');
+
+  updateRunningSummary();
+}
+
+function updateRunningSummary() {
+  let totalKm = 0, totalSec = 0;
+
+  currentRunningLaps.forEach(lap => {
+    const km = parseFloat(lap.km) || 0;
+    const min = parseInt(lap.min) || 0;
+    const sec = parseInt(lap.sec) || 0;
+    totalKm += km;
+    totalSec += min * 60 + sec;
+  });
+
+  const totalMin = Math.floor(totalSec / 60);
+  const remSec = totalSec % 60;
+  const timeStr = `${String(totalMin).padStart(2,'0')}:${String(remSec).padStart(2,'0')}`;
+
+  let paceStr = `--'--"`;
+  if (totalKm > 0 && totalSec > 0) {
+    const paceSec = totalSec / totalKm;
+    const paceMin = Math.floor(paceSec / 60);
+    const paceRemSec = Math.round(paceSec % 60);
+    paceStr = `${paceMin}'${String(paceRemSec).padStart(2,'0')}"`;
+  }
+
+  const kmEl = document.getElementById('run-total-km');
+  const timeEl = document.getElementById('run-total-time');
+  const paceEl = document.getElementById('run-avg-pace');
+  if (kmEl) kmEl.textContent = totalKm.toFixed(2);
+  if (timeEl) timeEl.textContent = timeStr;
+  if (paceEl) paceEl.textContent = paceStr;
+}
+
 // ==================== DAY TYPE ====================
 const DAY_TYPE_INFO = {
-  push: { label: 'Push Day', icon: '💥', cls: 'push' },
-  pull: { label: 'Pull Day', icon: '🔗', cls: 'pull' },
-  legs: { label: 'Legs Day', icon: '🦵', cls: 'legs' },
-  free: { label: '자유 운동', icon: '🏃', cls: 'free' },
+  push:    { label: 'Push Day',  icon: '💥', cls: 'push' },
+  pull:    { label: 'Pull Day',  icon: '🔗', cls: 'pull' },
+  legs:    { label: 'Legs Day',  icon: '🦵', cls: 'legs' },
+  running: { label: 'Running',   icon: '🏃', cls: 'running' },
+  free:    { label: 'Free',  icon: '✨', cls: 'free' },
 };
 
 function setDayType(type) {
   currentDayType = type;
-  ['push','pull','legs','free'].forEach(t => {
+  ['push','pull','legs','running','free'].forEach(t => {
     const card = document.getElementById(`day-btn-${t}`);
     if (!card) return;
     card.className = 'day-card' + (t === type ? ` active-${t}` : '');
   });
-  // 섹션 제목 업데이트
   const info = DAY_TYPE_INFO[type];
   showToast(`${info.icon} ${info.label} 선택됨`);
+  switchRecordArea(type);
+}
+
+function switchRecordArea(type) {
+  const weightArea = document.getElementById('weight-area');
+  const runningArea = document.getElementById('running-area');
+  const quickPick = document.querySelector('.quick-pick');
+  if (!weightArea || !runningArea) return;
+
+  if (type === 'running') {
+    weightArea.style.display = 'none';
+    if (quickPick) quickPick.style.display = 'none';
+    runningArea.classList.add('show');
+    // 구간이 없으면 기본 1개 추가
+    if (currentRunningLaps.length === 0) addRunningLap();
+  } else {
+    weightArea.style.display = '';
+    if (quickPick) quickPick.style.display = '';
+    runningArea.classList.remove('show');
+  }
 }
 
 function initDayType() {
-  ['push','pull','legs','free'].forEach(t => {
+  ['push','pull','legs','running','free'].forEach(t => {
     const card = document.getElementById(`day-btn-${t}`);
     if (!card) return;
     card.className = 'day-card' + (t === currentDayType ? ` active-${t}` : '');
@@ -1955,10 +2199,157 @@ function getCategoryMatchScore(sessionA, sessionB) {
   return total > 0 ? match / total : 0;
 }
 
+// ==================== 러닝 비교 모달 ====================
+function calcRunningStats(session) {
+  const laps = session.runningLaps || [];
+  const totalKm = laps.reduce((s, l) => s + (parseFloat(l.km) || 0), 0);
+  const totalSec = laps.reduce((s, l) => s + (parseInt(l.min)||0)*60 + (parseInt(l.sec)||0), 0);
+  const totalMin = Math.floor(totalSec / 60);
+  const remSec = totalSec % 60;
+  const timeStr = `${String(totalMin).padStart(2,'0')}:${String(remSec).padStart(2,'0')}`;
+  let paceSec = 0, paceStr = `--'--"`;
+  if (totalKm > 0 && totalSec > 0) {
+    paceSec = totalSec / totalKm;
+    paceStr = `${Math.floor(paceSec/60)}'${String(Math.round(paceSec%60)).padStart(2,'0')}"`;
+  }
+  return { totalKm, totalSec, totalMin, remSec, timeStr, paceSec, paceStr, lapCount: laps.length };
+}
+
+function showRunningCompareModal(newSession, overlay, content, dayInfo) {
+  const prev = sessions.slice(1).find(s => s.dayType === 'running');
+
+  // 이전 기록 없을 때
+  if (!prev) {
+    const ns = calcRunningStats(newSession);
+    content.innerHTML = `
+      <div class="compare-header" style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <div class="compare-title">${dayInfo.icon} ${dayInfo.label}</div>
+          <div class="compare-subtitle">세션 저장 완료!</div>
+        </div>
+        <button onclick="closeCompareDirect()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <div class="compare-no-prev">
+        <div class="no-prev-icon">🏃</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;">첫 Running 기록!</div>
+        <div style="display:flex;gap:16px;justify-content:center;margin:16px 0;flex-wrap:wrap;">
+          <div style="text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#ff9f43;">${ns.totalKm.toFixed(2)}</div>
+            <div style="font-size:11px;color:var(--text3);">총 거리 (km)</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#ff9f43;">${ns.timeStr}</div>
+            <div style="font-size:11px;color:var(--text3);">총 시간</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#ff9f43;">${ns.paceStr}</div>
+            <div style="font-size:11px;color:var(--text3);">평균 페이스</div>
+          </div>
+        </div>
+        <div style="color:var(--text3);font-size:13px;">다음 Running부터 이전 기록과 자동 비교해드립니다.</div>
+      </div>`;
+    overlay.classList.add('show');
+    return;
+  }
+
+  // 이전 기록 있을 때 - 비교
+  const ns = calcRunningStats(newSession);
+  const ps = calcRunningStats(prev);
+
+  function diffClass(val) {
+    if (val > 0) return 'diff-up';
+    if (val < 0) return 'diff-down';
+    return 'diff-same';
+  }
+  function diffSign(val, unit = '') {
+    if (val > 0) return `▲ +${val}${unit}`;
+    if (val < 0) return `▼ ${val}${unit}`;
+    return `— 동일`;
+  }
+
+  // 거리 차이
+  const kmDiff = Math.round((ns.totalKm - ps.totalKm) * 100) / 100;
+  const kmDiffStr = diffSign(kmDiff, ' km');
+  const kmCls = diffClass(kmDiff);
+
+  // 시간 차이 (짧을수록 좋음 → 부호 반전)
+  const secDiff = ns.totalSec - ps.totalSec;
+  const secDiffAbs = Math.abs(secDiff);
+  const secDiffStr = secDiff === 0 ? '— 동일'
+    : `${secDiff > 0 ? '▲ +' : '▼ -'}${String(Math.floor(secDiffAbs/60)).padStart(2,'0')}:${String(secDiffAbs%60).padStart(2,'0')}`;
+  const timeCls = secDiff < 0 ? 'diff-up' : secDiff > 0 ? 'diff-down' : 'diff-same';
+
+  // 페이스 차이 (낮을수록 좋음 → 부호 반전)
+  const paceDiff = Math.round(ns.paceSec - ps.paceSec);
+  const paceDiffAbs = Math.abs(paceDiff);
+  const paceDiffStr = paceDiff === 0 ? '— 동일'
+    : `${paceDiff < 0 ? '▼ -' : '▲ +'}${Math.floor(paceDiffAbs/60)}'${String(paceDiffAbs%60).padStart(2,'0')}"`;
+  const paceCls = paceDiff < 0 ? 'diff-up' : paceDiff > 0 ? 'diff-down' : 'diff-same';
+
+  // 구간 수 차이
+  const lapDiff = ns.lapCount - ps.lapCount;
+  const lapCls = diffClass(lapDiff);
+  const lapDiffStr = diffSign(lapDiff, ' 구간');
+
+  const [py, pm, pd] = prev.date.split('-').map(Number);
+  const prevDateStr = `${py}년 ${pm}월 ${pd}일`;
+
+  function statRow(label, prevVal, newVal, diffStr, cls) {
+    const clsColor = { 'diff-up': 'var(--accent)', 'diff-down': 'var(--accent3)', 'diff-same': 'var(--text3)' }[cls];
+    return `
+      <div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--text3);">${label}</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2);background:var(--surface2);padding:7px 4px;border-radius:6px;">${prevVal}</div>
+        <div style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);background:var(--surface2);padding:7px 4px;border-radius:6px;">${newVal}</div>
+        <div style="text-align:center;font-size:12px;font-weight:700;color:${clsColor};background:${clsColor}18;padding:7px 4px;border-radius:6px;">${diffStr}</div>
+      </div>`;
+  }
+
+  content.innerHTML = `
+    <div class="compare-header" style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px;">
+      <div>
+        <div class="compare-title">🏃 Running 비교</div>
+        <div class="compare-subtitle">${prevDateStr} → 이번 기록</div>
+      </div>
+      <button onclick="closeCompareDirect()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr;gap:8px;padding-bottom:8px;">
+      <div></div>
+      <div style="text-align:center;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;">이전</div>
+      <div style="text-align:center;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;">이번</div>
+      <div style="text-align:center;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;">변화</div>
+    </div>
+
+    ${statRow('총 거리', ps.totalKm.toFixed(2)+' km', ns.totalKm.toFixed(2)+' km', kmDiffStr, kmCls)}
+    ${statRow('총 시간', ps.timeStr, ns.timeStr, secDiffStr, timeCls)}
+    ${statRow('평균 페이스', ps.paceStr+'/km', ns.paceStr+'/km', paceDiffStr, paceCls)}
+    ${statRow('구간 수', ps.lapCount+'구간', ns.lapCount+'구간', lapDiffStr, lapCls)}
+
+    <div style="background:var(--surface2);border-radius:10px;padding:14px 16px;margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+      <div style="text-align:center;flex:1;min-width:70px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${kmDiff>=0?'var(--accent)':'var(--accent3)'};">${kmDiff>=0?'+':''}${kmDiff.toFixed(2)}</div>
+        <div style="font-size:10px;color:var(--text3);">거리 변화 (km)</div>
+      </div>
+      <div style="text-align:center;flex:1;min-width:70px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${paceDiff<=0?'var(--accent)':'var(--accent3)'};">${paceDiff<=0?'-':'+'}${Math.floor(paceDiffAbs/60)}'${String(paceDiffAbs%60).padStart(2,'0')}"</div>
+        <div style="font-size:10px;color:var(--text3);">페이스 변화</div>
+      </div>
+    </div>`;
+
+  overlay.classList.add('show');
+}
+
 function showCompareModal(newSession) {
   const overlay = document.getElementById('compare-overlay');
   const content = document.getElementById('compare-content');
   const dayInfo = DAY_TYPE_INFO[newSession.dayType] || { label: '운동', icon: '💪' };
+
+  // ── 러닝 세션 비교 ──
+  if (newSession.dayType === 'running') {
+    showRunningCompareModal(newSession, overlay, content, dayInfo);
+    return;
+  }
 
   // 1단계: 같은 dayType 세션만 후보로
   const sameDayCandidates = sessions.slice(1).filter(s => s.dayType === newSession.dayType);
@@ -2135,20 +2526,61 @@ function renderHistory() {
   }
 
   grid.innerHTML = sessions.slice(0, 20).map(s => {
-    const totalCal = estimateSessionCalories(s);
-    const totalSets = s.exercises.reduce((sum, e) => sum + e.sets.length, 0);
     const dayInfo = DAY_TYPE_INFO[s.dayType] || { label: '운동', icon: '💪' };
-    const dayBadgeColor = {push:'#ff6b6b',pull:'#6b9fff',legs:'#a06bff',free:'#c8f542'}[s.dayType] || 'var(--text3)';
+    const dayBadgeColor = {push:'#ff6b6b',pull:'#6b9fff',legs:'#a06bff',running:'#ff9f43',free:'#c8f542'}[s.dayType] || 'var(--text3)';
+    const dateStr = formatDate(s.date);
+    const badge = `<span style="font-size:11px;font-weight:600;color:${dayBadgeColor};background:${dayBadgeColor}18;padding:3px 9px;border-radius:12px;border:1px solid ${dayBadgeColor}44;">${dayInfo.icon} ${dayInfo.label}</span>`;
+
+    // ── 러닝 카드 ──
+    if (s.dayType === 'running') {
+      const laps = s.runningLaps || [];
+      const totalKm = laps.reduce((sum, l) => sum + (parseFloat(l.km) || 0), 0);
+      const totalSec = laps.reduce((sum, l) => sum + (parseInt(l.min)||0)*60 + (parseInt(l.sec)||0), 0);
+      const totalMin = Math.floor(totalSec / 60);
+      const remSec = totalSec % 60;
+      const timeStr = `${String(totalMin).padStart(2,'0')}:${String(remSec).padStart(2,'0')}`;
+      let paceStr = '--';
+      if (totalKm > 0 && totalSec > 0) {
+        const ps = totalSec / totalKm;
+        paceStr = `${Math.floor(ps/60)}'${String(Math.round(ps%60)).padStart(2,'0')}"`;
+      }
+      return `
+        <div class="history-card" onclick="openModal(${s.id})">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <div class="history-date">📅 ${dateStr}</div>
+            ${badge}
+          </div>
+          <div class="history-exercises">🏃 ${laps.length}구간 Running</div>
+          <div class="history-stats">
+            <div class="stat-item">
+              <div class="stat-val">${totalKm.toFixed(1)}</div>
+              <div class="stat-label">총 km</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">${timeStr}</div>
+              <div class="stat-label">총 시간</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val">${paceStr}</div>
+              <div class="stat-label">평균페이스</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ── 웨이트 카드 ──
+    const totalCal = estimateSessionCalories(s);
+    const totalSets = (s.exercises||[]).reduce((sum, e) => sum + e.sets.length, 0);
     return `
       <div class="history-card" onclick="openModal(${s.id})">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <div class="history-date">📅 ${formatDate(s.date)}</div>
-          <span style="font-size:11px;font-weight:600;color:${dayBadgeColor};background:${dayBadgeColor}18;padding:3px 9px;border-radius:12px;border:1px solid ${dayBadgeColor}44;">${dayInfo.icon} ${dayInfo.label}</span>
+          <div class="history-date">📅 ${dateStr}</div>
+          ${badge}
         </div>
-        <div class="history-exercises">${s.exercises.map(e => e.name).join(' · ')}</div>
+        <div class="history-exercises">${(s.exercises||[]).map(e => e.name).join(' · ')}</div>
         <div class="history-stats">
           <div class="stat-item">
-            <div class="stat-val">${s.exercises.length}</div>
+            <div class="stat-val">${(s.exercises||[]).length}</div>
             <div class="stat-label">운동 종목</div>
           </div>
           <div class="stat-item">
@@ -2160,8 +2592,7 @@ function renderHistory() {
             <div class="stat-label">소모(kcal)</div>
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
 }
 
@@ -2244,7 +2675,7 @@ function openLoadSessionModal() {
     return;
   }
 
-  const dayColors = { push:'#ff6b6b', pull:'#6b9fff', legs:'#a06bff', free:'#c8f542' };
+  const dayColors = { push:'#ff6b6b', pull:'#6b9fff', legs:'#a06bff', running:'#ff9f43', free:'#c8f542' };
 
   list.innerHTML = sessions.slice(0, 30).map(s => {
     const dayInfo = DAY_TYPE_INFO[s.dayType] || { label: '운동', icon: '💪' };
@@ -2283,29 +2714,36 @@ function loadSession(sessionId) {
     if (!confirm(`현재 작성 중인 기록이 있습니다.\n세션을 불러오면 기존 내용이 대체됩니다.\n계속하시겠습니까?`)) return;
   }
 
-  // 세션 데이터 불러오기
-  currentExercises = s.exercises.map(ex => ({
-    id: ++exerciseCounter,
-    name: ex.name,
-    category: ex.category || getCategory(ex.name),
-    sets: ex.sets.map(set => ({ weight: set.weight || '', reps: set.reps || '' }))
-  }));
-
-  // 날짜는 오늘로 설정 (새 기록이므로)
-  setToday();
-
-  // dayType 복원
+  // dayType 먼저 복원
   if (s.dayType) {
     currentDayType = s.dayType;
     initDayType();
+    switchRecordArea(s.dayType);
   }
 
-  renderExerciseList();
+  // 날짜는 오늘로 설정
+  setToday();
+
+  // ── 러닝 세션 불러오기 ──
+  if (s.dayType === 'running') {
+    currentRunningLaps = (s.runningLaps || []).map(l => ({
+      km: l.km || '', min: l.min || '', sec: l.sec || ''
+    }));
+    renderRunningLaps();
+  } else {
+    // ── 웨이트 세션 불러오기 ──
+    currentExercises = (s.exercises || []).map(ex => ({
+      id: ++exerciseCounter,
+      name: ex.name,
+      category: ex.category || getCategory(ex.name),
+      sets: ex.sets.map(set => ({ weight: set.weight || '', reps: set.reps || '' }))
+    }));
+    renderExerciseList();
+  }
+
   closeLoadSessionModalDirect();
   switchTab('record');
   showToast(`✅ '${formatDate(s.date)}' 세션을 불러왔습니다!`);
-
-  // 스크롤 최상단으로
   setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
 }
 
@@ -3038,7 +3476,7 @@ const GUIDE_CONTENT = {
     icon: '📋', title: '운동 기록 가이드',
     steps: [
       { num:'01', title:'목표 선택', desc:'🏋️ 벌크업 / 🥗 다이어트 / ⚡ 린매스업 중 현재 목표를 선택하세요.\n선택한 목표에 따라 AI 코칭 방향이 달라집니다.' },
-      { num:'02', title:'운동 타입 선택', desc:'오늘 어떤 운동인지 선택하세요.\n💥 Push Day (가슴·어깨·삼두) · 🔗 Pull Day (등·이두) · 🦵 Legs Day (하체) · 🏃 자유\n같은 타입끼리 자동 비교 분석됩니다.' },
+      { num:'02', title:'운동 타입 선택', desc:'오늘 어떤 운동인지 선택하세요.\n💥 Push Day (가슴·어깨·삼두) · 🔗 Pull Day (등·이두) · 🦵 Legs Day (하체) · 🏃 Free\n같은 타입끼리 자동 비교 분석됩니다.' },
       { num:'03', title:'날짜 & 운동 추가', desc:'날짜를 선택하고 빠른 추가 칩을 탭하거나\n[+ 운동 추가] 버튼으로 종목을 추가하세요.\n이름 입력 시 자동완성이 지원됩니다.' },
       { num:'04', title:'무게 & 횟수 입력', desc:'각 세트마다 무게(kg)와 횟수(회)를 입력하세요.\n[+ 세트 추가]로 세트 수를 늘릴 수 있습니다.' },
       { num:'05', title:'세션 저장', desc:'[💾 세션 저장]을 누르면 저장됩니다.\n저장 후 이전 같은 타입 세션과\n자동 비교 결과가 팝업으로 표시됩니다!' },
@@ -3049,7 +3487,7 @@ const GUIDE_CONTENT = {
     icon: '📊', title: '히스토리 가이드',
     steps: [
       { num:'01', title:'세션 카드 확인', desc:'저장된 세션이 최신순으로 표시됩니다.\n날짜, 운동 타입, 종목 목록,\n총 세트, 예상 소모 칼로리를 한눈에 확인하세요.' },
-      { num:'02', title:'운동 타입 배지', desc:'카드 우측 상단의 컬러 배지로 타입을 구분합니다.\n💥 빨강 = Push · 🔗 파랑 = Pull\n🦵 보라 = Legs · 🏃 초록 = 자유' },
+      { num:'02', title:'운동 타입 배지', desc:'카드 우측 상단의 컬러 배지로 타입을 구분합니다.\n💥 빨강 = Push · 🔗 파랑 = Pull\n🦵 보라 = Legs · 🏃 초록 = Free' },
       { num:'03', title:'세션 상세 보기', desc:'카드를 클릭하면 상세 화면이 열립니다.\n운동별 전체 세트·무게·횟수와\n예상 소모 칼로리를 확인할 수 있습니다.' },
       { num:'04', title:'세션 삭제', desc:'상세 화면 하단 [🗑 이 세션 삭제] 버튼으로\n해당 세션을 삭제할 수 있습니다.' },
     ],
