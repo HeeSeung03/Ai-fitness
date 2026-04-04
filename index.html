@@ -261,6 +261,33 @@
     width: 100%;
   }
 
+  /* number input spinner 스타일 — 흰 배경 제거 */
+  .set-row input[type=number]::-webkit-inner-spin-button,
+  .set-row input[type=number]::-webkit-outer-spin-button,
+  .profile-input::-webkit-inner-spin-button,
+  .profile-input::-webkit-outer-spin-button,
+  .running-input::-webkit-inner-spin-button,
+  .running-input::-webkit-outer-spin-button,
+  .edit-set-input::-webkit-inner-spin-button,
+  .edit-set-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    opacity: 0.4;
+    cursor: pointer;
+  }
+  .set-row input[type=number]::-webkit-inner-spin-button:hover,
+  .edit-set-input::-webkit-inner-spin-button:hover {
+    opacity: 0.8;
+  }
+  /* Firefox */
+  .set-row input[type=number],
+  .profile-input[type=number],
+  .running-input[type=number],
+  .edit-set-input[type=number] {
+    -moz-appearance: textfield;
+  }
+
   .set-row input:focus {
     border-color: var(--accent);
     background: rgba(200,245,66,0.04);
@@ -1382,7 +1409,7 @@
     </div>
 
     <!-- 개인 프로필 -->
-    <div class="profile-section" id="profile-section">
+    <div class="profile-section" id="profile-section" style="margin-top:10px;">
       <div class="profile-section-title">👤 내 프로필</div>
       <div class="profile-fields">
         <div class="profile-field">
