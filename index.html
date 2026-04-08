@@ -1120,6 +1120,37 @@
   .compare-start-btn:hover { background: #d8ff52; }
 
 
+  /* 히스토리 필터 탭 */
+  .history-filter-bar {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .hf-tab {
+    padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    border: 1px solid var(--border); background: none;
+    color: var(--text3); cursor: pointer; transition: all 0.15s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .hf-tab:hover { border-color: var(--text2); color: var(--text2); }
+  .hf-tab.active { border-color: var(--accent); background: rgba(200,245,66,0.1); color: var(--accent); }
+  .hf-tab.active-push   { border-color: #ff6b6b; background: rgba(255,107,107,0.1); color: #ff6b6b; }
+  .hf-tab.active-pull   { border-color: #6b9fff; background: rgba(107,159,255,0.1); color: #6b9fff; }
+  .hf-tab.active-legs   { border-color: #a06bff; background: rgba(160,107,255,0.1); color: #a06bff; }
+  .hf-tab.active-running{ border-color: #ff9f43; background: rgba(255,159,67,0.1);  color: #ff9f43; }
+
+  /* 월별 묶음 */
+  .month-group { margin-bottom: 24px; }
+  .month-label {
+    font-size: 12px; font-weight: 700; color: var(--text3);
+    letter-spacing: 0.5px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .month-label::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .month-toggle { font-size: 11px; color: var(--text3); }
+
   /* GOAL CARD 개선 */
   .goal-card-guide {
     font-size: 9px; color: var(--text3); line-height: 1.5;
@@ -1604,11 +1635,20 @@
     </div>
     <div class="section-sub">지난 세션들을 확인하세요</div>
 
+    <!-- 필터 탭 -->
+    <div class="history-filter-bar" id="history-filter-bar">
+      <button class="hf-tab active" data-filter="all" onclick="setHistoryFilter('all',this)">전체</button>
+      <button class="hf-tab" data-filter="push"    onclick="setHistoryFilter('push',this)">💥 Push</button>
+      <button class="hf-tab" data-filter="pull"    onclick="setHistoryFilter('pull',this)">🔗 Pull</button>
+      <button class="hf-tab" data-filter="legs"    onclick="setHistoryFilter('legs',this)">🦵 Legs</button>
+      <button class="hf-tab" data-filter="running" onclick="setHistoryFilter('running',this)">🏃 Running</button>
+    </div>
+
     <div class="compare-mode-bar">
       <button class="compare-mode-btn" id="compare-mode-btn" onclick="toggleCompareMode()">⚡ 비교 모드</button>
       <span class="compare-mode-hint" id="compare-mode-hint"></span>
     </div>
-    <div class="history-grid" id="history-grid"></div>
+    <div id="history-grid"></div>
     <button class="compare-start-btn" id="compare-start-btn" onclick="startManualCompare()">선택한 두 세션 비교하기 →</button>
   </div>
 
@@ -1721,6 +1761,7 @@ let currentTab = 'record';
 let editSession = null;
 let compareModeOn = false;
 let compareSelected = []; // [sessionA, sessionB]
+let historyFilter = 'all'; // 현재 필터
 
 const EXERCISES_DB = {
   '가슴': ['벤치프레스', '인클라인 벤치프레스', '디클라인 벤치프레스', '케이블 플라이', '딥스', '푸시업'],
@@ -2653,7 +2694,30 @@ function renderHistory() {
     return;
   }
 
-  grid.innerHTML = sessions.slice(0, 20).map(s => {
+  // 필터 적용
+  const filtered = historyFilter === 'all'
+    ? sessions
+    : sessions.filter(s => s.dayType === historyFilter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div style="color:var(--text3);font-size:13px;text-align:center;padding:32px 0;">해당 타입의 세션이 없습니다</div>`;
+    return;
+  }
+
+  // 월별 묶음
+  const byMonth = {};
+  filtered.forEach(s => {
+    const key = s.date.slice(0, 7); // "2026-04"
+    if (!byMonth[key]) byMonth[key] = [];
+    byMonth[key].push(s);
+  });
+
+  const monthKeys = Object.keys(byMonth).sort((a, b) => b.localeCompare(a));
+
+  grid.innerHTML = monthKeys.map(month => {
+    const [year, mon] = month.split('-');
+    const label = `${year}년 ${parseInt(mon)}월 (${byMonth[month].length}세션)`;
+    const cards = byMonth[month].slice(0, 20).map(s => {
     const dayInfo = DAY_TYPE_INFO[s.dayType] || { label: '운동', icon: '💪' };
     const dayBadgeColor = {push:'#ff6b6b',pull:'#6b9fff',legs:'#a06bff',running:'#ff9f43',free:'#c8f542'}[s.dayType] || 'var(--text3)';
     const dateStr = formatDate(s.date);
@@ -2739,6 +2803,12 @@ function renderHistory() {
           </div>
         </div>
       </div>`;
+    }).join('');
+
+    return `<div class="month-group">
+      <div class="month-label">${label}</div>
+      <div class="history-grid">${cards}</div>
+    </div>`;
   }).join('');
 }
 
@@ -3404,6 +3474,22 @@ function initGoal() {
 // ==================== 목표 피드백 (Claude API) ====================
 
 
+
+// ==================== 히스토리 필터 ====================
+function setHistoryFilter(filter, btn) {
+  historyFilter = filter;
+  // 탭 스타일 갱신
+  document.querySelectorAll('.hf-tab').forEach(b => {
+    b.className = 'hf-tab';
+  });
+  if (filter === 'all') {
+    btn.classList.add('active');
+  } else {
+    btn.classList.add(`active-${filter}`);
+  }
+  renderHistory();
+}
+
 // ==================== 수동 세션 비교 ====================
 function toggleCompareMode() {
   compareModeOn = !compareModeOn;
@@ -3447,7 +3533,8 @@ function toggleSelectSession(sessionId) {
     hint.textContent = `A 선택 완료 (${compareSelected[0].date}) — 두 번째 세션 선택`;
     startBtn.style.display = 'none';
   } else {
-    hint.textContent = `A: ${compareSelected[0].date} vs B: ${compareSelected[1].date}`;
+    const [earlier, later] = [...compareSelected].sort((a,b) => a.date.localeCompare(b.date));
+    hint.textContent = `${earlier.date} → ${later.date} (날짜순 자동 정렬)`;
     startBtn.style.display = 'block';
   }
   renderHistory();
@@ -3455,9 +3542,9 @@ function toggleSelectSession(sessionId) {
 
 function startManualCompare() {
   if (compareSelected.length < 2) return;
-  const [sessionA, sessionB] = compareSelected;
-  // A를 이전, B를 현재로 비교
-  showManualCompareModal(sessionA, sessionB);
+  // 날짜 오름차순 정렬 — 오래된 세션이 prev, 최신 세션이 cur
+  const [prevSession, newSession] = [...compareSelected].sort((a, b) => a.date.localeCompare(b.date));
+  showManualCompareModal(prevSession, newSession);
 }
 
 function showManualCompareModal(prevSession, newSession) {
