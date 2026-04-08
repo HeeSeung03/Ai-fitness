@@ -1818,14 +1818,14 @@ function renderQuickChips() {
 function addExercise(name = '') {
   exerciseCounter++;
   const id = exerciseCounter;
-  currentExercises.push({ id, name, category: getCategory(name), focus: '', sets: [{ weight: '', reps: '' }] });
+  currentExercises.push({ id, name, category: getCategory(name), focus: '', manualFocus: false, sets: [{ weight: '', reps: '' }] });
   renderExerciseList();
 }
 
 function addExerciseNamed(name) {
   exerciseCounter++;
   const id = exerciseCounter;
-  currentExercises.push({ id, name, category: getCategory(name), focus: '', sets: [{ weight: '', reps: '' }, { weight: '', reps: '' }, { weight: '', reps: '' }] });
+  currentExercises.push({ id, name, category: getCategory(name), focus: '', manualFocus: false, sets: [{ weight: '', reps: '' }, { weight: '', reps: '' }, { weight: '', reps: '' }] });
   renderExerciseList();
   setTimeout(() => {
     const cards = document.querySelectorAll('.exercise-card');
@@ -1892,11 +1892,25 @@ function updateCategory(exIdx, val) {
 }
 
 
+// 반복수 평균으로 자동 분류
+function autoDetectFocus(ex) {
+  const validSets = ex.sets.filter(s => parseInt(s.reps) > 0);
+  if (!validSets.length) return ex.focus || '';
+  const avgReps = validSets.reduce((sum, s) => sum + parseInt(s.reps), 0) / validSets.length;
+  if (avgReps <= 5)  return 'strength';
+  if (avgReps <= 12) return 'hypertrophy';
+  return ''; // 13회 이상 = 근지구력, 미분류
+}
+
 function setExFocus(exIdx, focus) {
+  // 수동 토글: 같은 태그 누르면 해제, 다른 태그 누르면 변경
+  // 수동으로 변경한 경우 manualFocus 플래그 설정
   if (currentExercises[exIdx].focus === focus) {
-    currentExercises[exIdx].focus = ''; // 토글
+    currentExercises[exIdx].focus = '';
+    currentExercises[exIdx].manualFocus = false;
   } else {
     currentExercises[exIdx].focus = focus;
+    currentExercises[exIdx].manualFocus = true;
   }
   renderExerciseList();
   saveDraft();
@@ -1940,9 +1954,13 @@ function renderExerciseList() {
       <div class="focus-tag-wrap">
         <span class="focus-tag-label">특화</span>
         <button class="focus-tag ${ex.focus==='strength' ? 'active-strength' : ''}"
+          data-focus="strength"
           onclick="setExFocus(${exIdx}, 'strength')">💪 근력</button>
         <button class="focus-tag ${ex.focus==='hypertrophy' ? 'active-hypertrophy' : ''}"
+          data-focus="hypertrophy"
           onclick="setExFocus(${exIdx}, 'hypertrophy')">🔥 근비대</button>
+        ${ex.focus && !ex.manualFocus ? '<span style="font-size:9px;color:var(--text3);margin-left:4px;">자동</span>' : ''}
+        ${ex.manualFocus ? '<span style="font-size:9px;color:var(--accent);margin-left:4px;">수동</span>' : ''}
       </div>
     `;
     container.appendChild(card);
@@ -1976,6 +1994,26 @@ function renderSetRow(exIdx, setIdx, set) {
 
 function updateSet(exIdx, setIdx, field, val) {
   currentExercises[exIdx].sets[setIdx][field] = val;
+
+  // 반복수 변경 시 — 수동 설정이 없으면 자동 분류
+  if (field === 'reps') {
+    const ex = currentExercises[exIdx];
+    if (!ex.manualFocus) {
+      const detected = autoDetectFocus(ex);
+      if (detected !== ex.focus) {
+        ex.focus = detected;
+        // 태그 버튼만 업데이트 (전체 렌더 없이)
+        const card = document.querySelectorAll('.exercise-card')[exIdx];
+        if (card) {
+          card.querySelectorAll('.focus-tag').forEach(btn => btn.classList.remove('active-strength','active-hypertrophy'));
+          if (detected) {
+            const targetBtn = card.querySelector(`.focus-tag[data-focus="${detected}"]`);
+            if (targetBtn) targetBtn.classList.add(`active-${detected}`);
+          }
+        }
+      }
+    }
+  }
   saveDraft();
 }
 
@@ -2137,6 +2175,7 @@ function saveSession() {
       name: ex.name,
       category: ex.category && ex.category !== '기타' ? ex.category : getCategory(ex.name),
       focus: ex.focus || '',
+      manualFocus: ex.manualFocus || false,
       sets: ex.sets.filter(s => s.weight || s.reps)
     }))
   };
