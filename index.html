@@ -1142,6 +1142,28 @@
   }
   .compare-start-btn:hover { background: #d8ff52; }
 
+  /* 편집 모달 focus 태그 */
+  .edit-focus-wrap {
+    display: flex; gap: 6px; align-items: center;
+    margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .edit-focus-label {
+    font-size: 10px; color: var(--text3); margin-right: 2px;
+  }
+  .edit-focus-tag {
+    padding: 3px 11px; border-radius: 20px; font-size: 11px;
+    font-weight: 700; border: 1px solid var(--border);
+    background: none; color: var(--text3); cursor: pointer;
+    transition: all 0.15s; font-family: 'Noto Sans KR', sans-serif;
+  }
+  .edit-focus-tag.active-strength {
+    border-color: #f5a742; background: rgba(245,167,66,0.12); color: #f5a742;
+  }
+  .edit-focus-tag.active-hypertrophy {
+    border-color: var(--accent); background: rgba(200,245,66,0.1); color: var(--accent);
+  }
+
   /* GOAL CARD 개선 */
   .goal-card-guide {
     font-size: 9px; color: var(--text3); line-height: 1.5;
@@ -2925,7 +2947,14 @@ function renderEditModal() {
         </select>
         <button class="edit-del-ex-btn" onclick="editDelExercise(${ei})">✕</button>
       </div>
-      <div class="edit-set-header" style="display:grid;grid-template-columns:44px 1fr 1fr 28px;gap:6px;margin-bottom:6px;font-size:10px;color:var(--text3);text-align:center;">
+      <div class="edit-focus-wrap">
+        <span class="edit-focus-label">특화</span>
+        <button class="edit-focus-tag ${(ex.focus||'')==='strength' ? 'active-strength' : ''}"
+          onclick="setEditFocus(${ei},'strength')">💪 근력</button>
+        <button class="edit-focus-tag ${(ex.focus||'')==='hypertrophy' ? 'active-hypertrophy' : ''}"
+          onclick="setEditFocus(${ei},'hypertrophy')">🔥 근비대</button>
+      </div>
+      <div class="edit-set-header" style="display:grid;grid-template-columns:44px 1fr 1fr 28px;gap:6px;margin-bottom:6px;font-size:10px;color:var(--text3);text-align:center;margin-top:10px;">
         <div>세트</div><div>무게(kg)</div><div>횟수(회)</div><div></div>
       </div>
       ${ex.sets.map((set, si) => `
@@ -2972,6 +3001,13 @@ function renderEditModal() {
   `;
 }
 
+function setEditFocus(ei, focus) {
+  if (!editSession) return;
+  const cur = editSession.exercises[ei].focus || '';
+  editSession.exercises[ei].focus = cur === focus ? '' : focus;
+  renderEditModal();
+}
+
 function editDelExercise(ei) {
   if (editSession.exercises.length <= 1) { showToast('운동은 최소 1개 필요합니다'); return; }
   editSession.exercises.splice(ei, 1);
@@ -2979,7 +3015,7 @@ function editDelExercise(ei) {
 }
 
 function editAddExercise() {
-  editSession.exercises.push({ name: '', category: '기타', sets: [{ weight: '', reps: '' }] });
+  editSession.exercises.push({ name: '', category: '기타', focus: '', sets: [{ weight: '', reps: '' }] });
   renderEditModal();
   setTimeout(() => {
     const box = document.getElementById('edit-modal-box');
