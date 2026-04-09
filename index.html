@@ -1204,6 +1204,55 @@
     font-family: 'Noto Sans KR', sans-serif;
   }
 
+  /* 체성분 기록 섹션 */
+  .body-comp-section {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px; margin-top: 12px;
+  }
+  .body-comp-title {
+    font-size: 12px; color: var(--text3); text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 12px;
+  }
+  .body-comp-stats {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
+    margin-bottom: 12px;
+  }
+  .body-stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; text-align: center;
+  }
+  .body-stat-val {
+    font-family: 'JetBrains Mono', monospace; font-size: 17px;
+    font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 4px;
+  }
+  .body-stat-val.fat   { color: #f5a742; }
+  .body-stat-val.muscle{ color: var(--accent); }
+  .body-stat-label { font-size: 10px; color: var(--text3); }
+  .body-input-row {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
+    margin-bottom: 10px;
+  }
+  .body-log-btn {
+    width: 100%; padding: 9px; border-radius: 8px;
+    border: 1px solid var(--border); background: none;
+    color: var(--text2); font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.15s;
+  }
+  .body-log-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .body-history-list {
+    margin-top: 10px; display: flex; flex-direction: column; gap: 5px;
+    max-height: 150px; overflow-y: auto;
+  }
+  .body-history-row {
+    display: grid; grid-template-columns: 72px 1fr 1fr 1fr 20px;
+    gap: 4px; font-size: 11px; color: var(--text2);
+    padding: 5px 8px; background: var(--surface); border-radius: 6px;
+    align-items: center;
+  }
+  .body-diff-up   { color: var(--accent); font-size: 9px; }
+  .body-diff-down { color: #f54242; font-size: 9px; }
+
   /* GOAL CARD 개선 */
   .goal-card-guide {
     font-size: 9px; color: var(--text3); line-height: 1.5;
@@ -1594,6 +1643,50 @@
       </div>
     </div>
 
+    <!-- 체성분 기록 -->
+    <div class="body-comp-section">
+      <div class="body-comp-title">⚖️ 체성분 기록</div>
+      <div class="body-comp-stats">
+        <div class="body-stat-card">
+          <div class="body-stat-val" id="bcs-weight-val">—</div>
+          <div class="body-stat-label">체중 kg</div>
+        </div>
+        <div class="body-stat-card">
+          <div class="body-stat-val fat" id="bcs-fat-val">—</div>
+          <div class="body-stat-label">체지방 %</div>
+        </div>
+        <div class="body-stat-card">
+          <div class="body-stat-val muscle" id="bcs-muscle-val">—</div>
+          <div class="body-stat-label">골격근량 kg</div>
+        </div>
+      </div>
+      <div class="body-input-row">
+        <div class="profile-field">
+          <label style="font-size:10px;color:var(--text3);">체중</label>
+          <div class="profile-input-wrap">
+            <input class="profile-input" id="bci-weight" type="number" min="30" max="300" step="0.1" placeholder="70.0">
+            <span class="profile-unit">kg</span>
+          </div>
+        </div>
+        <div class="profile-field">
+          <label style="font-size:10px;color:var(--text3);">체지방률</label>
+          <div class="profile-input-wrap">
+            <input class="profile-input" id="bci-fat" type="number" min="1" max="60" step="0.1" placeholder="15.0">
+            <span class="profile-unit">%</span>
+          </div>
+        </div>
+        <div class="profile-field">
+          <label style="font-size:10px;color:var(--text3);">골격근량</label>
+          <div class="profile-input-wrap">
+            <input class="profile-input" id="bci-muscle" type="number" min="10" max="100" step="0.1" placeholder="35.0">
+            <span class="profile-unit">kg</span>
+          </div>
+        </div>
+      </div>
+      <button class="body-log-btn" onclick="logBodyComp()">+ 오늘 체성분 기록</button>
+      <div class="body-history-list" id="body-history-list"></div>
+    </div>
+
     <!-- 운동 타입 선택 -->
     <div class="day-section">
       <div class="day-section-title">📅 오늘의 운동 타입</div>
@@ -1850,9 +1943,7 @@
 </div>
 
 <!-- GUIDE MODAL -->
-<div class="guide-overlay" id="guide-overlay" onclick="closeGuide(event)">
-  <div class="guide-modal" id="guide-modal"></div>
-</div>
+
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -1901,6 +1992,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderQuickChips();
   initGoal();
   loadProfile();
+  renderBodyComp();
   initDayType();
   renderHistory();
   renderMetrics();
@@ -2932,7 +3024,7 @@ function showCompareModal(newSession) {
         <span class="goal-feedback-dot"></span>
         피드백
       </div>
-      <div id="goal-feedback-content"></div>
+      <div id="goal-feedback-content-2"</div>
     </div>
   `;
 
@@ -3402,6 +3494,10 @@ function closeEditModalDirect() {
 function estimateSessionCalories(s) {
   const profile = JSON.parse(localStorage.getItem('fitcore_profile') || '{}');
   const bodyWeight = parseFloat(profile.weight) || 70;
+  const _bodyLogs = JSON.parse(localStorage.getItem('fitcore_bodycomp') || '[]');
+  const _latestFat = _bodyLogs[0]?.fat;
+  const _leanMass = _latestFat != null ? bodyWeight * (1 - _latestFat / 100) : bodyWeight * 0.8;
+  const _calBW = _latestFat != null ? (_leanMass * 1.2 + bodyWeight * 0.3) : bodyWeight;
   const age = parseInt(profile.age) || 30;
   const gender = profile.gender || 'male';
   const height = parseFloat(profile.height) || 170;
@@ -3456,7 +3552,7 @@ function estimateSessionCalories(s) {
       const setDurationMin = (reps * 3 + 90) / 60;
 
       // 기본 칼로리 (MET 기반)
-      let setCal = met * bodyWeight * (setDurationMin / 60);
+      let setCal = met * _calBW * (setDurationMin / 60);
 
       // 고중량 보정 (체중 대비 중량이 클수록 강도 증가)
       if (weight > 0) {
@@ -3469,7 +3565,7 @@ function estimateSessionCalories(s) {
     });
 
     // 준비 시간 (운동당 2분 워밍업)
-    totalCal += 4.0 * bodyWeight * (2 / 60);
+    totalCal += 4.0 * _calBW * (2 / 60);
   });
 
   // EPOC (운동 후 초과 산소 소비) 보정 — 웨이트는 약 15% 추가
@@ -3575,106 +3671,82 @@ function renderMetrics() {
 }
 
 function calculateMetrics(typeSessions) {
+  // 가장 최근 2개 세션 비교
   const recent = typeSessions[0];
   const prev   = typeSessions[1];
-  const typeLabel = METRICS_TAB_COLORS[currentMetricsTab]?.label || '';
 
-  // ── 총 볼륨 (무게 × 횟수 × 세트 합계) ──
-  const getTotalVol = (s) =>
-    (s.exercises||[]).reduce((sum, ex) =>
-      sum + ex.sets.reduce((s2, set) =>
-        s2 + parseFloat(set.weight||0) * parseInt(set.reps||0), 0), 0);
-
-  const recentVol = getTotalVol(recent);
-  const prevVol   = getTotalVol(prev);
-  const volChange = prevVol > 0 ? ((recentVol - prevVol) / prevVol * 100) : 0;
-
-  // ── 추정 최고 1RM (Epley 공식) ──
-  const getMax1RM = (s) => {
-    let max = 0;
-    (s.exercises||[]).forEach(ex => {
-      ex.sets.forEach(set => {
-        const w = parseFloat(set.weight||0);
-        const r = parseInt(set.reps||0);
-        if (w > 0 && r > 0) {
-          const rm = r === 1 ? w : w * (1 + r / 30);
-          if (rm > max) max = rm;
-        }
-      });
-    });
-    return Math.round(max);
+  const estimateCalories = (s) => {
+    const totalSets = s.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+    const totalVol  = getTotalVolume(s);
+    return Math.round(totalSets * 8 + totalVol * 0.05);
   };
 
-  const recentRM = getMax1RM(recent);
-  const prevRM   = getMax1RM(prev);
-  const rmChange = prevRM > 0 ? ((recentRM - prevRM) / prevRM * 100) : 0;
-
-  // ── 예상 칼로리 ──
-  const recentCal = estimateSessionCalories(recent);
-  const prevCal   = estimateSessionCalories(prev);
+  const recentCal = estimateCalories(recent);
+  const prevCal   = estimateCalories(prev);
   const calChange = prevCal > 0 ? ((recentCal - prevCal) / prevCal * 100) : 0;
 
-  // ── 주간 빈도 ──
-  const weekTypeSessions = typeSessions.filter(s =>
-    (new Date() - new Date(s.date)) < 7 * 24 * 60 * 60 * 1000
-  ).length;
+  // 운동 강도 (세트당 평균 볼륨)
+  const getIntensity = (s) => {
+    const allSets   = s.exercises.flatMap(e => e.sets);
+    const validSets = allSets.filter(set => set.weight && set.reps);
+    if (!validSets.length) return 0;
+    return validSets.reduce((sum, set) => sum + parseFloat(set.weight||0) * parseInt(set.reps||0), 0) / validSets.length;
+  };
+  const recentInt    = getIntensity(recent);
+  const prevInt      = getIntensity(prev);
+  const intensityChange = prevInt > 0 ? ((recentInt - prevInt) / prevInt * 100) : 0;
 
-  // ── 날짜 간격 ──
-  const dayDiff = Math.round((new Date(recent.date) - new Date(prev.date)) / (1000*60*60*24));
+  // 이 타입의 주간 빈도
+  const weekTypeSessions = typeSessions.filter(s => {
+    const d = new Date(s.date);
+    return (new Date() - d) < 7 * 24 * 60 * 60 * 1000;
+  }).length;
+
+  // 날짜 차이 (이전 → 최근)
+  const dayDiff = Math.round((new Date(recent.date) - new Date(prev.date)) / (1000 * 60 * 60 * 24));
+
+  const calPct = Math.min(Math.max(calChange + 50, 0), 100);
+  const intPct = Math.min(Math.max(intensityChange + 50, 0), 100);
+  const typeLabel = METRICS_TAB_COLORS[currentMetricsTab]?.label || '';
 
   const getColor = (val) => val >= 0
     ? 'linear-gradient(90deg,var(--accent),var(--accent2))'
     : 'linear-gradient(90deg,var(--accent3),#ff8c00)';
 
-  // 퍼센트 바 위치 계산 (50 = 기준선, 범위 ±50%)
-  const toPct = (change) => Math.min(Math.max(change + 50, 0), 100);
-
   return [
-    // ① 예상 칼로리
     {
-      name: '🔥 예상 칼로리',
-      value: `${recentCal.toLocaleString()} kcal`,
+      name: '🔥 이번 세션 예상 칼로리',
+      value: `${recentCal} kcal`,
       pct: Math.min(recentCal / 600 * 100, 100),
       color: 'linear-gradient(90deg,#ff6b35,#f7c59f)',
       desc: recentCal >= 400
-        ? `✅ 고강도 세션! 이전 ${typeLabel} (${prevCal}kcal) 대비 ${calChange >= 0?'+':''}${calChange.toFixed(0)}%`
+        ? `✅ 고강도 세션! 이전 ${typeLabel} (${prevCal}kcal) 대비 ${calChange >= 0 ? '+' : ''}${calChange.toFixed(0)}%`
         : recentCal >= 200
-        ? `👍 적정 강도. 이전 ${typeLabel} (${prevCal}kcal) 대비 ${calChange >= 0?'+':''}${calChange.toFixed(0)}%`
+        ? `👍 적정 강도. 이전 ${typeLabel} (${prevCal}kcal) 대비 ${calChange >= 0 ? '+' : ''}${calChange.toFixed(0)}%`
         : `⚠️ 세션 강도가 낮습니다. 세트 수나 무게를 높여보세요.`
     },
-    // ② 점진적 과부하 — 총 볼륨 기준
     {
       name: '🔄 점진적 과부하',
-      value: `${volChange >= 0?'+':''}${volChange.toFixed(1)}%`,
-      pct: toPct(volChange),
-      color: getColor(volChange),
-      desc: (() => {
-        const rVolStr = `${Math.round(recentVol).toLocaleString()}kg`;
-        const pVolStr = `${Math.round(prevVol).toLocaleString()}kg`;
-        if (volChange >= 5)
-          return `✅ 총 볼륨 ${rVolStr} (+${volChange.toFixed(1)}%) — 이전 ${typeLabel} (${pVolStr}) 대비 증가`;
-        if (volChange >= 0)
-          return `⚠️ 총 볼륨 ${rVolStr} — 이전 ${typeLabel} (${pVolStr})과 유사. 세트·무게 증량을 고려하세요.`;
-        return `🔴 총 볼륨 ${rVolStr} (${volChange.toFixed(1)}%) — 이전 ${typeLabel} (${pVolStr}) 대비 감소. 디로드 또는 피로 확인.`;
-      })()
+      value: `${calChange >= 0 ? '+' : ''}${calChange.toFixed(1)}%`,
+      pct: calPct,
+      color: getColor(calChange),
+      desc: calChange >= 5
+        ? `✅ 이전 ${typeLabel} 대비 운동량이 증가했습니다!`
+        : calChange >= 0
+        ? `⚠️ 운동량 변화가 적습니다. 세트 또는 무게 증량을 고려하세요.`
+        : `🔴 이전 ${typeLabel} 대비 운동량 감소. 회복 또는 디로드인지 확인하세요.`
     },
-    // ③ 운동 강도 — 추정 1RM 기준
     {
       name: '⚡ 운동 강도',
-      value: `${rmChange >= 0?'+':''}${rmChange.toFixed(1)}%`,
-      pct: toPct(rmChange),
-      color: getColor(rmChange),
-      desc: (() => {
-        if (!recentRM) return `⚠️ 중량 데이터가 없습니다. 무게를 입력하면 강도를 측정할 수 있습니다.`;
-        const rmStr = `추정 1RM ${recentRM}kg`;
-        if (rmChange >= 3)
-          return `✅ ${rmStr} (+${rmChange.toFixed(1)}%) — 이전 ${typeLabel} (${prevRM}kg) 대비 강도 향상`;
-        if (rmChange >= 0)
-          return `👍 ${rmStr} — 이전 ${typeLabel} (${prevRM}kg)과 유사. 고반복 또는 중량 증가를 시도해보세요.`;
-        return `🔴 ${rmStr} (${rmChange.toFixed(1)}%) — 이전 ${typeLabel} (${prevRM}kg) 대비 강도 감소. 회복에 집중하세요.`;
-      })()
+      value: `${intensityChange >= 0 ? '+' : ''}${intensityChange.toFixed(1)}%`,
+      pct: intPct,
+      color: getColor(intensityChange),
+      desc: intensityChange >= 3
+        ? `✅ 강도가 높아졌습니다. 다음 ${typeLabel} 충분한 회복이 중요합니다.`
+        : intensityChange >= 0
+        ? `⚠️ 강도 소폭 증가. 더 무거운 무게나 고반복 세트를 추가해보세요.`
+        : `🔴 강도 감소. 과훈련일 수 있으니 회복에 집중하세요.`
     },
-    // ④ 세션 간격
     {
       name: '📅 간격',
       value: `${dayDiff}일`,
@@ -4160,7 +4232,7 @@ function showManualCompareModal(prevSession, newSession) {
         <span class="goal-feedback-dot"></span>
         피드백
       </div>
-      <div id="goal-feedback-content"></div>
+      <div id="goal-feedback-content-3"</div>
     </div>
   `;
 
@@ -4340,6 +4412,83 @@ function requestGoalFeedback(session) {
 }
 
 // ==================== 개인 프로필 ====================
+
+// ==================== 체성분 기록 ====================
+function logBodyComp() {
+  const w = parseFloat(document.getElementById('bci-weight')?.value);
+  const f = parseFloat(document.getElementById('bci-fat')?.value);
+  const m = parseFloat(document.getElementById('bci-muscle')?.value);
+
+  if (!w && !f && !m) { showToast('하나 이상 입력하세요'); return; }
+
+  const today = new Date().toISOString().split('T')[0];
+  const logs = JSON.parse(localStorage.getItem('fitcore_bodycomp') || '[]');
+  const entry = { date: today, weight: w||null, fat: f||null, muscle: m||null };
+  const idx = logs.findIndex(l => l.date === today);
+  if (idx >= 0) logs[idx] = entry; else logs.unshift(entry);
+  logs.splice(90);
+  localStorage.setItem('fitcore_bodycomp', JSON.stringify(logs));
+
+  // 체중을 프로필에도 연동
+  if (w) {
+    const profile = JSON.parse(localStorage.getItem('fitcore_profile') || '{}');
+    profile.weight = w;
+    localStorage.setItem('fitcore_profile', JSON.stringify(profile));
+    const wEl = document.getElementById('profile-weight');
+    if (wEl) { wEl.value = w; updateProfileBMI(); }
+  }
+
+  document.getElementById('bci-weight').value = '';
+  document.getElementById('bci-fat').value = '';
+  document.getElementById('bci-muscle').value = '';
+
+  renderBodyComp();
+  showToast('✅ 체성분 기록 완료!');
+}
+
+function deleteBodyLog(date) {
+  const logs = JSON.parse(localStorage.getItem('fitcore_bodycomp') || '[]');
+  localStorage.setItem('fitcore_bodycomp', JSON.stringify(logs.filter(l => l.date !== date)));
+  renderBodyComp();
+}
+
+function renderBodyComp() {
+  const logs = JSON.parse(localStorage.getItem('fitcore_bodycomp') || '[]');
+  const cur = logs[0], prv = logs[1];
+
+  // 최신 수치 표시
+  const fmt = (v, u='') => v != null ? v.toFixed(1) + u : '—';
+  const diff = (c, p, u='') => {
+    if (c == null || p == null) return '';
+    const d = (c - p).toFixed(1);
+    const cls = d > 0 ? 'body-diff-up' : d < 0 ? 'body-diff-down' : '';
+    return cls ? ` <span class="${cls}">${d>0?'+':''}${d}${u}</span>` : '';
+  };
+
+  const wEl = document.getElementById('bcs-weight-val');
+  const fEl = document.getElementById('bcs-fat-val');
+  const mEl = document.getElementById('bcs-muscle-val');
+  if (wEl) wEl.innerHTML = fmt(cur?.weight) + diff(cur?.weight, prv?.weight, 'kg');
+  if (fEl) fEl.innerHTML = fmt(cur?.fat, '%') + diff(cur?.fat, prv?.fat, '%');
+  if (mEl) mEl.innerHTML = fmt(cur?.muscle) + diff(cur?.muscle, prv?.muscle, 'kg');
+
+  // 히스토리
+  const listEl = document.getElementById('body-history-list');
+  if (!listEl) return;
+  if (!logs.length) {
+    listEl.innerHTML = '<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px;">기록 없음</div>';
+    return;
+  }
+  listEl.innerHTML = logs.slice(0, 30).map(l => `
+    <div class="body-history-row">
+      <span style="color:var(--text3);font-size:10px;">${l.date.slice(5).replace('-','/')}</span>
+      <span>${l.weight != null ? l.weight.toFixed(1)+'kg' : '—'}</span>
+      <span style="color:#f5a742;">${l.fat != null ? l.fat.toFixed(1)+'%' : '—'}</span>
+      <span style="color:var(--accent);">${l.muscle != null ? l.muscle.toFixed(1)+'kg' : '—'}</span>
+      <button onclick="deleteBodyLog('${l.date}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0;">✕</button>
+    </div>`).join('');
+}
+
 function saveProfile() {
   const h = parseFloat(document.getElementById('profile-height')?.value) || 0;
   const w = parseFloat(document.getElementById('profile-weight')?.value) || 0;
@@ -4395,7 +4544,16 @@ function updateProfileBMI() {
     periodInfo = ` · 목표: ${arrow}${Math.abs(diff).toFixed(1)}kg (${p}주, 주${needed}kg)`;
   }
 
-  bmiEl.innerHTML = `BMI <strong>${bmi.toFixed(1)}</strong> (${bmiLabel})${bmrText}${periodInfo}`;
+  const _bl = JSON.parse(localStorage.getItem('fitcore_bodycomp') || '[]');
+  const _lb = _bl[0];
+  let bodyText = '';
+  if (_lb?.fat != null) {
+    const lean = (w * (1 - _lb.fat/100)).toFixed(1);
+    bodyText = ` · 체지방 <strong>${_lb.fat.toFixed(1)}%</strong>`;
+    if (_lb.muscle != null) bodyText += ` · 골격근량 <strong>${_lb.muscle.toFixed(1)}kg</strong>`;
+    bodyText += ` · 제지방 <strong>${lean}kg</strong>`;
+  }
+  bmiEl.innerHTML = `BMI <strong>${bmi.toFixed(1)}</strong> (${bmiLabel})${bmrText}${bodyText}${periodInfo}`;
 }
 
 function getSessionContext() {
