@@ -1161,7 +1161,7 @@
     border-color: var(--accent3); background: rgba(245,66,66,0.08);
   }
 
-  /* 순서 변경 드래그 핸들 */
+  /* 순서 변경 */
   .drag-handle {
     cursor: grab; color: var(--text3); font-size: 16px;
     padding: 0 4px; user-select: none; flex-shrink: 0;
@@ -1174,6 +1174,34 @@
   .exercise-card.drag-over {
     border-color: var(--accent);
     background: rgba(200,245,66,0.04);
+  }
+  /* 모바일 선택 상태 */
+  .exercise-card.sort-selected {
+    border-color: var(--accent);
+    background: rgba(200,245,66,0.04);
+    box-shadow: 0 0 0 2px rgba(200,245,66,0.15);
+  }
+  .sort-controls {
+    display: none; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    background: rgba(200,245,66,0.06);
+    border-top: 1px solid rgba(200,245,66,0.15);
+    justify-content: flex-end;
+  }
+  .sort-controls.show { display: flex; }
+  .sort-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text2); width: 34px; height: 34px;
+    border-radius: 8px; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .sort-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sort-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .sort-cancel-btn {
+    background: none; border: none; color: var(--text3);
+    font-size: 12px; cursor: pointer; padding: 4px 8px;
+    font-family: 'Noto Sans KR', sans-serif;
   }
 
   /* GOAL CARD 개선 */
@@ -1987,55 +2015,34 @@ function updateCategory(exIdx, val) {
 
 // 반복수 평균으로 자동 분류
 
-// ==================== 운동 순서 드래그 ====================
+// ==================== 운동 순서 변경 ====================
 let dragState = null;
 
+// PC 드래그
 function startDrag(e, fromIdx, card) {
   e.preventDefault();
-  const isTouch = e.type === 'touchstart';
-  const startY = isTouch ? e.touches[0].clientY : e.clientY;
-
   card.classList.add('dragging');
-  dragState = { fromIdx, card, startY, currentIdx: fromIdx };
+  dragState = { fromIdx, card };
 
   const onMove = (ev) => {
-    const y = ev.touches ? ev.touches[0].clientY : ev.clientY;
-    const cards = document.querySelectorAll('.exercise-card:not(.dragging)');
-    let overIdx = null;
-
-    cards.forEach((c, i) => {
-      const rect = c.getBoundingClientRect();
-      const mid = rect.top + rect.height / 2;
-      if (y < mid && overIdx === null) overIdx = i >= dragState.fromIdx ? i : i;
-      c.classList.remove('drag-over');
-    });
-
-    // 가장 가까운 카드 강조
+    const y = ev.clientY;
     let closest = null, closestDist = Infinity;
-    const allCards = document.querySelectorAll('.exercise-card');
-    allCards.forEach((c, i) => {
+    document.querySelectorAll('.exercise-card').forEach((c, i) => {
       if (c.classList.contains('dragging')) return;
+      c.classList.remove('drag-over');
       const rect = c.getBoundingClientRect();
-      const mid = rect.top + rect.height / 2;
-      const dist = Math.abs(y - mid);
+      const dist = Math.abs(y - (rect.top + rect.height / 2));
       if (dist < closestDist) { closestDist = dist; closest = { el: c, idx: i }; }
     });
-    if (closest) {
-      closest.el.classList.add('drag-over');
-      dragState.toIdx = closest.idx;
-    }
+    if (closest) { closest.el.classList.add('drag-over'); dragState.toIdx = closest.idx; }
   };
 
   const onEnd = () => {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onEnd);
-    document.removeEventListener('touchmove', onMove);
-    document.removeEventListener('touchend', onEnd);
-
     card.classList.remove('dragging');
     document.querySelectorAll('.exercise-card').forEach(c => c.classList.remove('drag-over'));
-
-    if (dragState && dragState.toIdx !== undefined && dragState.toIdx !== dragState.fromIdx) {
+    if (dragState?.toIdx !== undefined && dragState.toIdx !== dragState.fromIdx) {
       const moved = currentExercises.splice(dragState.fromIdx, 1)[0];
       currentExercises.splice(dragState.toIdx, 0, moved);
       renderExerciseList();
@@ -2046,8 +2053,42 @@ function startDrag(e, fromIdx, card) {
 
   document.addEventListener('mousemove', onMove);
   document.addEventListener('mouseup', onEnd);
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('touchend', onEnd);
+}
+
+// 모바일 롱프레스 — 순서 변경 모드 진입
+function enterSortMode(exIdx) {
+  // 기존 선택 해제
+  document.querySelectorAll('.exercise-card').forEach(c => c.classList.remove('sort-selected'));
+  document.querySelectorAll('.sort-controls').forEach(c => c.classList.remove('show'));
+
+  const cards = document.querySelectorAll('.exercise-card');
+  if (cards[exIdx]) cards[exIdx].classList.add('sort-selected');
+
+  const ctrl = document.getElementById(`sort-ctrl-${exIdx}`);
+  if (ctrl) {
+    ctrl.classList.add('show');
+    // 아래 버튼 disabled 처리
+    const downBtn = ctrl.querySelectorAll('.sort-btn')[1];
+    if (downBtn) downBtn.disabled = (exIdx >= currentExercises.length - 1);
+    ctrl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function moveExercise(exIdx, dir) {
+  const toIdx = exIdx + dir;
+  if (toIdx < 0 || toIdx >= currentExercises.length) return;
+  const tmp = currentExercises[exIdx];
+  currentExercises[exIdx] = currentExercises[toIdx];
+  currentExercises[toIdx] = tmp;
+  renderExerciseList();
+  saveDraft();
+  // 이동 후 새 위치에서 sort mode 유지
+  setTimeout(() => enterSortMode(toIdx), 50);
+}
+
+function cancelSortMode(exIdx) {
+  document.querySelectorAll('.exercise-card').forEach(c => c.classList.remove('sort-selected'));
+  document.querySelectorAll('.sort-controls').forEach(c => c.classList.remove('show'));
 }
 
 function autoDetectFocus(ex) {
@@ -2103,13 +2144,30 @@ function renderExerciseList() {
         ${ex.focus === 'strength' ? '<span style="font-size:10px;color:#f5a742;font-weight:700;">💪 근력</span>' : ex.focus === 'hypertrophy' ? '<span style="font-size:10px;color:#c8f542;font-weight:700;">🔥 근비대</span>' : '<span style="font-size:10px;color:var(--text3);">—</span>'}
         <span style="font-size:9px;color:var(--text3);">자동분류</span>
       </div>
+      <div class="sort-controls" id="sort-ctrl-${exIdx}">
+        <span style="font-size:11px;color:var(--accent);margin-right:auto;">순서 변경</span>
+        <button class="sort-btn" onclick="moveExercise(${exIdx},-1)" ${exIdx===0?'disabled':''} title="위로">↑</button>
+        <button class="sort-btn" onclick="moveExercise(${exIdx},1)" title="아래로">↓</button>
+        <button class="sort-cancel-btn" onclick="cancelSortMode(${exIdx})">완료</button>
+      </div>
     `;
-    // 드래그 이벤트 연결
+    // PC: 드래그 핸들
     const handle = card.querySelector('.drag-handle');
     if (handle) {
       handle.addEventListener('mousedown', (e) => startDrag(e, exIdx, card));
-      handle.addEventListener('touchstart', (e) => startDrag(e, exIdx, card), { passive: false });
     }
+
+    // 모바일: 카드 롱프레스로 순서 변경 모드 진입
+    let longPressTimer = null;
+    card.addEventListener('touchstart', (e) => {
+      if (e.target.closest('input,select,button')) return;
+      longPressTimer = setTimeout(() => {
+        enterSortMode(exIdx);
+        if (navigator.vibrate) navigator.vibrate(40);
+      }, 500);
+    }, { passive: true });
+    card.addEventListener('touchend', () => { clearTimeout(longPressTimer); });
+    card.addEventListener('touchmove', () => { clearTimeout(longPressTimer); });
 
     container.appendChild(card);
   });
@@ -2680,6 +2738,88 @@ function showRunningCompareModal(newSession, overlay, content, dayInfo) {
   overlay.classList.add('show');
 }
 
+
+// 특정 종목에 대해 가장 최근 과거 세션 찾기 (현재 세션 제외)
+function findPrevSessionForExercise(exerciseName, excludeSessionId) {
+  for (const s of sessions) {
+    if (s.id === excludeSessionId) continue;
+    const ex = (s.exercises || []).find(e => e.name === exerciseName);
+    if (ex) return { session: s, exercise: ex };
+  }
+  return null;
+}
+
+// 종목 비교 행 생성 (공통)
+function buildExRows(allNames, newSession, defaultPrevSession) {
+  let totalWeightDiff = 0, totalRepsDiff = 0, totalSetsDiff = 0;
+  const newExMap = {};
+  newSession.exercises.forEach(ex => { newExMap[ex.name] = ex; });
+  const defaultPrevMap = {};
+  (defaultPrevSession?.exercises || []).forEach(ex => { defaultPrevMap[ex.name] = ex; });
+
+  const rows = allNames.map(name => {
+    const nEx = newExMap[name];
+    if (!nEx) return '';
+
+    // 직전 세션에 종목 있으면 직전 사용, 없으면 과거 전체에서 탐색
+    let pEx = defaultPrevMap[name] || null;
+    let pDate = defaultPrevSession?.date || null;
+
+    if (!pEx) {
+      const found = findPrevSessionForExercise(name, newSession.id);
+      if (found) { pEx = found.exercise; pDate = found.session.date; }
+    }
+
+    const maxSets = Math.max(nEx.sets.length, pEx?.sets.length || 0);
+    if (!maxSets) return '';
+
+    const setRows = [];
+    for (let i = 0; i < maxSets; i++) {
+      const nSet = nEx.sets[i]; const pSet = pEx?.sets[i];
+      const nW = parseFloat(nSet?.weight || 0); const pW = parseFloat(pSet?.weight || 0);
+      const nR = parseInt(nSet?.reps || 0);   const pR = parseInt(pSet?.reps || 0);
+      const wDiff = pSet ? nW - pW : 0;
+      const rDiff = pSet ? nR - pR : 0;
+      if (pSet) { totalWeightDiff += wDiff; totalRepsDiff += rDiff; }
+      const wDiffCls = wDiff > 0 ? 'diff-up' : wDiff < 0 ? 'diff-down' : 'diff-same';
+      const wDiffStr = pSet ? (wDiff > 0 ? `+${wDiff}kg` : wDiff < 0 ? `${wDiff}kg` : '–') : '–';
+      const rDiffStr = pSet ? (rDiff > 0 ? `+${rDiff}회` : rDiff < 0 ? `${rDiff}회` : '–') : '–';
+      setRows.push(`
+        <div class="compare-set-row">
+          <div class="compare-set-label compare-cell">SET ${i+1}</div>
+          <div class="compare-cell old">${pSet ? `${pW}kg×${pR}회` : '—'}</div>
+          <div class="compare-cell new">${nSet ? `${nW}kg×${nR}회` : '—'}</div>
+          <div class="compare-cell ${wDiffCls}">${wDiffStr} / ${rDiffStr}</div>
+        </div>`);
+    }
+    const setsDiff = nEx.sets.length - (pEx?.sets.length || 0);
+    totalSetsDiff += setsDiff;
+
+    // 헤더 날짜: 과거 세션 날짜 표시 (직전과 다를 경우 구분)
+    const prevDateLabel = pDate
+      ? pDate.slice(5).replace('-','/')
+      : '기록없음';
+    const isFromOtherSession = pEx && pDate && defaultPrevSession && pDate !== defaultPrevSession.date;
+    const pastNote = isFromOtherSession
+      ? `<span style="font-size:9px;color:var(--text3);margin-left:4px;">(${pDate})</span>`
+      : '';
+
+    return `
+      <div class="compare-ex">
+        <div class="compare-ex-name">${name}${pastNote}</div>
+        <div class="compare-col-header" style="display:grid;grid-template-columns:44px 1fr 1fr 1fr;gap:6px;margin-bottom:4px;">
+          <div></div>
+          <div>${pDate ? prevDateLabel : '—'}</div>
+          <div>이번</div>
+          <div>변화</div>
+        </div>
+        ${setRows.join('')}
+      </div>`;
+  }).join('');
+
+  return { rows, totalWeightDiff, totalRepsDiff, totalSetsDiff };
+}
+
 function showCompareModal(newSession) {
   const overlay = document.getElementById('compare-overlay');
   const content = document.getElementById('compare-content');
@@ -2747,65 +2887,9 @@ function showCompareModal(newSession) {
   }
 
   // 운동별 비교
-  const newExMap = {};
-  newSession.exercises.forEach(ex => { newExMap[ex.name] = ex; });
-  const prevExMap = {};
-  prevSession.exercises.forEach(ex => { prevExMap[ex.name] = ex; });
-
-  // 현재 세션 종목만 기준 — 이전에만 있는 종목은 제외
   const allNames = [...new Set(newSession.exercises.map(e => e.name))];
-
-  let totalWeightDiff = 0, totalRepsDiff = 0, totalSetsDiff = 0;
-
-  const exRows = allNames.map(name => {
-    const nEx = newExMap[name];
-    const pEx = prevExMap[name];
-    const maxSets = Math.max(nEx?.sets.length || 0, pEx?.sets.length || 0);
-    if (!maxSets) return '';
-
-    const setRows = [];
-    for (let i = 0; i < maxSets; i++) {
-      const nSet = nEx?.sets[i];
-      const pSet = pEx?.sets[i];
-      const nW = parseFloat(nSet?.weight || 0);
-      const pW = parseFloat(pSet?.weight || 0);
-      const nR = parseInt(nSet?.reps || 0);
-      const pR = parseInt(pSet?.reps || 0);
-      const wDiff = nW - pW;
-      const rDiff = nR - pR;
-      totalWeightDiff += wDiff;
-      totalRepsDiff += rDiff;
-      const wDiffCls = wDiff > 0 ? 'diff-up' : wDiff < 0 ? 'diff-down' : 'diff-same';
-      const rDiffCls = rDiff > 0 ? 'diff-up' : rDiff < 0 ? 'diff-down' : 'diff-same';
-      const wDiffStr = wDiff > 0 ? `+${wDiff}kg` : wDiff < 0 ? `${wDiff}kg` : `–`;
-      const rDiffStr = rDiff > 0 ? `+${rDiff}회` : rDiff < 0 ? `${rDiff}회` : `–`;
-      setRows.push(`
-        <div class="compare-set-row">
-          <div class="compare-set-label compare-cell">SET ${i+1}</div>
-          <div class="compare-cell old">${pSet ? `${pW}kg×${pR}회` : '없음'}</div>
-          <div class="compare-cell new">${nSet ? `${nW}kg×${nR}회` : '없음'}</div>
-          <div class="compare-cell ${wDiffCls}">${wDiffStr} / ${rDiffStr}</div>
-        </div>
-      `);
-    }
-    const setsDiff = (nEx?.sets.length || 0) - (pEx?.sets.length || 0);
-    totalSetsDiff += setsDiff;
-
-    return `
-      <div class="compare-ex">
-        <div class="compare-ex-name">${name}
-          ${!pEx ? '<span style="font-size:10px;color:var(--accent);margin-left:6px;">새로 추가</span>' : ''}
-        </div>
-        <div class="compare-col-header" style="display:grid;grid-template-columns:44px 1fr 1fr 1fr;gap:6px;margin-bottom:4px;">
-          <div></div>
-          <div>이전 (${prevSession.date.slice(5).replace('-','/')})</div>
-          <div>이번</div>
-          <div>변화</div>
-        </div>
-        ${setRows.join('')}
-      </div>
-    `;
-  }).join('');
+  const { rows: exRows, totalWeightDiff, totalRepsDiff, totalSetsDiff } =
+    buildExRows(allNames, newSession, prevSession);
 
   const wCls = totalWeightDiff > 0 ? 'up' : totalWeightDiff < 0 ? 'down' : 'same';
   const rCls = totalRepsDiff > 0 ? 'up' : totalRepsDiff < 0 ? 'down' : 'same';
@@ -4016,60 +4100,9 @@ function showManualCompareModal(prevSession, newSession) {
   const content = document.getElementById('compare-content');
   const dayInfo = DAY_TYPE_INFO[newSession.dayType] || { label: '운동', icon: '💪' };
 
-  // 현재 세션 종목만 기준
-  const newExMap = {};
-  newSession.exercises.forEach(ex => { newExMap[ex.name] = ex; });
-  const prevExMap = {};
-  prevSession.exercises.forEach(ex => { prevExMap[ex.name] = ex; });
   const allNames = [...new Set(newSession.exercises.map(e => e.name))];
-
-  let totalWeightDiff = 0, totalRepsDiff = 0, totalSetsDiff = 0;
-
-  const exRows = allNames.map(name => {
-    const nEx = newExMap[name];
-    const pEx = prevExMap[name];
-    const maxSets = Math.max(nEx?.sets.length || 0, pEx?.sets.length || 0);
-    if (!maxSets) return '';
-
-    const setRows = [];
-    for (let i = 0; i < maxSets; i++) {
-      const nSet = nEx?.sets[i]; const pSet = pEx?.sets[i];
-      const nW = parseFloat(nSet?.weight || 0); const pW = parseFloat(pSet?.weight || 0);
-      const nR = parseInt(nSet?.reps || 0);   const pR = parseInt(pSet?.reps || 0);
-      const wDiff = nW - pW; const rDiff = nR - pR;
-      const wDiffCls = wDiff > 0 ? 'diff-up' : wDiff < 0 ? 'diff-down' : 'diff-same';
-      const wDiffStr = wDiff > 0 ? `+${wDiff}kg` : wDiff < 0 ? `${wDiff}kg` : '–';
-      const rDiffStr = rDiff > 0 ? `+${rDiff}회` : rDiff < 0 ? `${rDiff}회` : '–';
-      setRows.push(`
-        <div class="compare-set-row">
-          <div class="compare-set-label compare-cell">SET ${i+1}</div>
-          <div class="compare-cell old">${pSet ? `${pW}kg×${pR}회` : '없음'}</div>
-          <div class="compare-cell new">${nSet ? `${nW}kg×${nR}회` : '없음'}</div>
-          <div class="compare-cell ${wDiffCls}">${wDiffStr} / ${rDiffStr}</div>
-        </div>`);
-    }
-    const setsDiff = (nEx?.sets.length || 0) - (pEx?.sets.length || 0);
-    totalSetsDiff += setsDiff;
-    if (nEx && pEx) {
-      const nVol = nEx.sets.reduce((s,set)=>s+parseFloat(set.weight||0)*parseInt(set.reps||0),0);
-      const pVol = pEx.sets.reduce((s,set)=>s+parseFloat(set.weight||0)*parseInt(set.reps||0),0);
-      totalWeightDiff += nVol - pVol;
-      totalRepsDiff += nEx.sets.reduce((s,set)=>s+parseInt(set.reps||0),0) - pEx.sets.reduce((s,set)=>s+parseInt(set.reps||0),0);
-    }
-    return `
-      <div class="compare-ex">
-        <div class="compare-ex-name">${name}
-          ${!pEx ? '<span style="font-size:10px;color:var(--accent);margin-left:6px;">새로 추가</span>' : ''}
-        </div>
-        <div class="compare-col-header" style="display:grid;grid-template-columns:44px 1fr 1fr 1fr;gap:6px;margin-bottom:4px;">
-          <div></div>
-          <div>${prevSession.date.slice(5).replace('-','/')}</div>
-          <div>${newSession.date.slice(5).replace('-','/')}</div>
-          <div>변화</div>
-        </div>
-        ${setRows.join('')}
-      </div>`;
-  }).join('');
+  const { rows: exRows, totalWeightDiff, totalRepsDiff, totalSetsDiff } =
+    buildExRows(allNames, newSession, prevSession);
 
   const wCls = totalWeightDiff > 0 ? 'up' : totalWeightDiff < 0 ? 'down' : 'same';
   const rCls = totalRepsDiff > 0 ? 'up' : totalRepsDiff < 0 ? 'down' : 'same';
