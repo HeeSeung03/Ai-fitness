@@ -3675,26 +3675,40 @@ function calculateMetrics(typeSessions) {
   const recent = typeSessions[0];
   const prev   = typeSessions[1];
 
+  // ── 예상 칼로리 ──
   const estimateCalories = (s) => {
     const totalSets = s.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
     const totalVol  = getTotalVolume(s);
     return Math.round(totalSets * 8 + totalVol * 0.05);
   };
-
   const recentCal = estimateCalories(recent);
   const prevCal   = estimateCalories(prev);
   const calChange = prevCal > 0 ? ((recentCal - prevCal) / prevCal * 100) : 0;
 
-  // 운동 강도 (세트당 평균 볼륨)
-  const getIntensity = (s) => {
-    const allSets   = s.exercises.flatMap(e => e.sets);
-    const validSets = allSets.filter(set => set.weight && set.reps);
-    if (!validSets.length) return 0;
-    return validSets.reduce((sum, set) => sum + parseFloat(set.weight||0) * parseInt(set.reps||0), 0) / validSets.length;
+  // ── 점진적 과부하: 총 볼륨(kg) 직접 비교 ──
+  const recentVol = Math.round(getTotalVolume(recent));
+  const prevVol   = Math.round(getTotalVolume(prev));
+  const volChange = prevVol > 0 ? ((recentVol - prevVol) / prevVol * 100) : 0;
+
+  // ── 운동 강도: Epley 공식으로 추정 최고 1RM ──
+  // 1RM = weight × (1 + reps / 30)
+  const getMax1RM = (s) => {
+    let max = 0;
+    s.exercises.forEach(ex => {
+      ex.sets.forEach(set => {
+        const w = parseFloat(set.weight || 0);
+        const r = parseInt(set.reps || 0);
+        if (w > 0 && r > 0) {
+          const rm = w * (1 + r / 30);
+          if (rm > max) max = rm;
+        }
+      });
+    });
+    return Math.round(max * 10) / 10;
   };
-  const recentInt    = getIntensity(recent);
-  const prevInt      = getIntensity(prev);
-  const intensityChange = prevInt > 0 ? ((recentInt - prevInt) / prevInt * 100) : 0;
+  const recentRM = getMax1RM(recent);
+  const prevRM   = getMax1RM(prev);
+  const rmChange = prevRM > 0 ? ((recentRM - prevRM) / prevRM * 100) : 0;
 
   // 이 타입의 주간 빈도
   const weekTypeSessions = typeSessions.filter(s => {
@@ -3702,11 +3716,11 @@ function calculateMetrics(typeSessions) {
     return (new Date() - d) < 7 * 24 * 60 * 60 * 1000;
   }).length;
 
-  // 날짜 차이 (이전 → 최근)
+  // 날짜 차이
   const dayDiff = Math.round((new Date(recent.date) - new Date(prev.date)) / (1000 * 60 * 60 * 24));
 
-  const calPct = Math.min(Math.max(calChange + 50, 0), 100);
-  const intPct = Math.min(Math.max(intensityChange + 50, 0), 100);
+  const volPct = Math.min(Math.max(volChange + 50, 0), 100);
+  const rmPct  = Math.min(Math.max(rmChange  + 50, 0), 100);
   const typeLabel = METRICS_TAB_COLORS[currentMetricsTab]?.label || '';
 
   const getColor = (val) => val >= 0
@@ -3727,25 +3741,35 @@ function calculateMetrics(typeSessions) {
     },
     {
       name: '🔄 점진적 과부하',
-      value: `${calChange >= 0 ? '+' : ''}${calChange.toFixed(1)}%`,
-      pct: calPct,
-      color: getColor(calChange),
-      desc: calChange >= 5
-        ? `✅ 이전 ${typeLabel} 대비 운동량이 증가했습니다!`
-        : calChange >= 0
-        ? `⚠️ 운동량 변화가 적습니다. 세트 또는 무게 증량을 고려하세요.`
-        : `🔴 이전 ${typeLabel} 대비 운동량 감소. 회복 또는 디로드인지 확인하세요.`
+      value: `${volChange >= 0 ? '+' : ''}${volChange.toFixed(1)}%`,
+      pct: volPct,
+      color: getColor(volChange),
+      desc: (() => {
+        const diff = recentVol - prevVol;
+        const sign = diff >= 0 ? '+' : '';
+        const trend = volChange >= 5
+          ? `✅ 총 볼륨 증가! ${prevVol.toLocaleString()}kg → ${recentVol.toLocaleString()}kg (${sign}${diff.toLocaleString()}kg)`
+          : volChange >= 0
+          ? `⚠️ ${prevVol.toLocaleString()}kg → ${recentVol.toLocaleString()}kg. 세트·무게 증량을 고려하세요.`
+          : `🔴 ${prevVol.toLocaleString()}kg → ${recentVol.toLocaleString()}kg (${sign}${diff.toLocaleString()}kg). 회복 구간인지 확인하세요.`;
+        return trend;
+      })()
     },
     {
       name: '⚡ 운동 강도',
-      value: `${intensityChange >= 0 ? '+' : ''}${intensityChange.toFixed(1)}%`,
-      pct: intPct,
-      color: getColor(intensityChange),
-      desc: intensityChange >= 3
-        ? `✅ 강도가 높아졌습니다. 다음 ${typeLabel} 충분한 회복이 중요합니다.`
-        : intensityChange >= 0
-        ? `⚠️ 강도 소폭 증가. 더 무거운 무게나 고반복 세트를 추가해보세요.`
-        : `🔴 강도 감소. 과훈련일 수 있으니 회복에 집중하세요.`
+      value: `${rmChange >= 0 ? '+' : ''}${rmChange.toFixed(1)}%`,
+      pct: rmPct,
+      color: getColor(rmChange),
+      desc: (() => {
+        const sign = recentRM >= prevRM ? '+' : '';
+        const diff = Math.round((recentRM - prevRM) * 10) / 10;
+        const trend = rmChange >= 3
+          ? `✅ 추정 1RM 상승! ${prevRM}kg → ${recentRM}kg (${sign}${diff}kg). 신경근 적응 진행 중입니다.`
+          : rmChange >= 0
+          ? `⚠️ 추정 1RM ${prevRM}kg → ${recentRM}kg. 고중량 세트를 추가해보세요.`
+          : `🔴 추정 1RM ${prevRM}kg → ${recentRM}kg (${diff}kg). 피로 누적을 확인하세요.`;
+        return trend;
+      })()
     },
     {
       name: '📅 간격',
