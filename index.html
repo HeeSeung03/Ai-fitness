@@ -1171,7 +1171,7 @@
     letter-spacing: 1px; margin-bottom: 12px;
   }
   .profile-fields {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   }
   .profile-field { display: flex; flex-direction: column; gap: 5px; }
   .profile-field label {
@@ -1507,6 +1507,23 @@
           </div>
         </div>
         <div class="profile-field">
+          <label>나이</label>
+          <div class="profile-input-wrap">
+            <input class="profile-input" id="profile-age" type="number" min="10" max="99" placeholder="30" oninput="saveProfile()">
+            <span class="profile-unit">세</span>
+          </div>
+        </div>
+        <div class="profile-field">
+          <label>성별</label>
+          <div class="profile-input-wrap">
+            <select class="profile-input" id="profile-gender" onchange="saveProfile()" style="padding:8px 6px;">
+              <option value="">선택</option>
+              <option value="male">남성</option>
+              <option value="female">여성</option>
+            </select>
+          </div>
+        </div>
+        <div class="profile-field">
           <label>목표 체중</label>
           <div class="profile-input-wrap">
             <input class="profile-input" id="profile-target" type="number" min="30" max="300" placeholder="75" oninput="saveProfile()">
@@ -1687,6 +1704,37 @@
           </div>
         </div>
       </div>
+
+      <!-- 종목별 1RM 변화 그래프 -->
+      <div class="feedback-panel">
+        <div class="panel-header">📈 종목별 1RM 성장 추이</div>
+        <div class="panel-body">
+          <div style="margin-bottom:10px;">
+            <select id="rm-exercise-select" onchange="renderRMChart()"
+              style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:12px;outline:none;width:100%;">
+              <option value="">종목 선택</option>
+            </select>
+          </div>
+          <div id="rm-chart-container" style="min-height:80px;"></div>
+        </div>
+      </div>
+
+      <!-- Push·Pull·Legs 빈도·볼륨 밸런스 -->
+      <div class="feedback-panel">
+        <div class="panel-header">⚖️ 주간 운동 밸런스</div>
+        <div class="panel-body">
+          <div id="balance-panel"></div>
+        </div>
+      </div>
+
+      <!-- 휴식일 감지 -->
+      <div class="feedback-panel">
+        <div class="panel-header">🛌 회복 & 휴식 현황</div>
+        <div class="panel-body">
+          <div id="rest-panel"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1799,6 +1847,9 @@ document.addEventListener('DOMContentLoaded', () => {
   renderMetrics();
   renderPR();
   renderVolumeChart();
+  initRMSelect();
+  renderBalancePanel();
+  renderRestPanel();
 
   // 작성 중 복구 확인
   checkDraftRecovery();
@@ -2195,6 +2246,9 @@ function saveSession() {
   renderMetrics();
   renderPR();
   renderVolumeChart();
+  initRMSelect();
+  renderBalancePanel();
+  renderRestPanel();
 
   // 과거 날짜 세션은 비교 모달 생략
   if (isPastDate) {
@@ -2979,6 +3033,9 @@ function deleteSession(id) {
   renderMetrics();
   renderPR();
   renderVolumeChart();
+  initRMSelect();
+  renderBalancePanel();
+  renderRestPanel();
   showToast('세션이 삭제되었습니다');
 }
 
@@ -3129,9 +3186,82 @@ function closeEditModalDirect() {
 
 // ==================== VOLUME CHART ====================
 function estimateSessionCalories(s) {
-  const totalSets = s.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
-  const totalVol = getTotalVolume(s);
-  return Math.round(totalSets * 8 + totalVol * 0.05);
+  const profile = JSON.parse(localStorage.getItem('fitcore_profile') || '{}');
+  const bodyWeight = parseFloat(profile.weight) || 70;
+  const age = parseInt(profile.age) || 30;
+  const gender = profile.gender || 'male';
+  const height = parseFloat(profile.height) || 170;
+  // Mifflin-St Jeor BMR
+  const bmr = gender === 'male'
+    ? 10*bodyWeight + 6.25*height - 5*age + 5
+    : 10*bodyWeight + 6.25*height - 5*age - 161;
+  // 체중 기반 칼로리 보정 계수 (BMR 반영)
+  const weightFactor = bodyWeight / 70;
+
+  // ── 러닝 세션 ──
+  if (s.dayType === 'running') {
+    const laps = s.runningLaps || [];
+    const totalKm = laps.reduce((sum, l) => sum + (parseFloat(l.km) || 0), 0);
+    // MET 8.0 (일반 러닝), 공식: MET × 체중(kg) × 시간(h)
+    const totalSec = laps.reduce((sum, l) => sum + (parseInt(l.min)||0)*60 + (parseInt(l.sec)||0), 0);
+    const hours = totalSec / 3600;
+    if (hours > 0) return Math.round(8.0 * bodyWeight * hours * (1 + (age - 30) * -0.003));
+    // 시간 없으면 거리 기반 추정 (평균 1km = 체중 × 1.0kcal)
+    return Math.round(totalKm * bodyWeight * 1.0);
+  }
+
+  // ── 웨이트 세션 ──
+  // 종목별 MET 값 (웨이트 트레이닝 기준)
+  const MET_MAP = {
+    // 고강도 복합 운동
+    '데드리프트': 6.0, '스쿼트': 5.5, '바벨 로우': 5.0,
+    '벤치프레스': 5.0, '오버헤드 프레스': 4.5, '클린': 6.5,
+    // 중강도
+    '풀업': 4.5, '딥스': 4.5, '런지': 4.5, '레그프레스': 4.0,
+    '인클라인 벤치프레스': 4.5, '디클라인 벤치프레스': 4.5,
+    '랫풀다운': 4.0, '시티드 로우': 4.0, '바벨컬': 3.5,
+    '힙스러스트': 4.0, '레그컬': 3.5, '레그익스텐션': 3.5,
+    // 저강도 고립
+    '케이블 플라이': 3.0, '사이드 레터럴 레이즈': 3.0,
+    '프론트 레이즈': 3.0, '해머컬': 3.5, '트라이셉스 푸시다운': 3.0,
+    '오버헤드 익스텐션': 3.0, '스컬크러셔': 3.0,
+  };
+  const DEFAULT_MET = { strength: 5.0, hypertrophy: 4.0, '': 4.0 };
+
+  let totalCal = 0;
+
+  s.exercises.forEach(ex => {
+    const met = MET_MAP[ex.name] || DEFAULT_MET[ex.focus || ''] || 4.0;
+    const validSets = ex.sets.filter(set => parseInt(set.reps) > 0);
+
+    validSets.forEach(set => {
+      const reps = parseInt(set.reps) || 0;
+      const weight = parseFloat(set.weight) || 0;
+
+      // 세트 시간 추정: 반복수 × 평균 3초 + 휴식 90초
+      const setDurationMin = (reps * 3 + 90) / 60;
+
+      // 기본 칼로리 (MET 기반)
+      let setCal = met * bodyWeight * (setDurationMin / 60);
+
+      // 고중량 보정 (체중 대비 중량이 클수록 강도 증가)
+      if (weight > 0) {
+        const intensityRatio = weight / bodyWeight;
+        const intensityBonus = Math.min(intensityRatio * 0.3, 0.5); // 최대 50% 보정
+        setCal *= (1 + intensityBonus);
+      }
+
+      totalCal += setCal;
+    });
+
+    // 준비 시간 (운동당 2분 워밍업)
+    totalCal += 4.0 * bodyWeight * (2 / 60);
+  });
+
+  // EPOC (운동 후 초과 산소 소비) 보정 — 웨이트는 약 15% 추가
+  totalCal *= 1.15;
+
+  return Math.max(Math.round(totalCal), 50);
 }
 
 function renderVolumeChart() {
@@ -3324,6 +3454,210 @@ function calculateMetrics(typeSessions) {
 }
 
 // ==================== PR ====================
+
+// ==================== 종목별 1RM 성장 추이 ====================
+function initRMSelect() {
+  const sel = document.getElementById('rm-exercise-select');
+  if (!sel) return;
+  const names = [...new Set(sessions.flatMap(s =>
+    (s.exercises||[]).filter(e => e.sets.some(set => parseFloat(set.weight) > 0)).map(e => e.name)
+  ))].sort();
+  sel.innerHTML = '<option value="">종목 선택</option>' +
+    names.map(n => `<option value="${n}">${n}</option>`).join('');
+  if (names.length) { sel.value = names[0]; renderRMChart(); }
+}
+
+function renderRMChart() {
+  const sel = document.getElementById('rm-exercise-select');
+  const container = document.getElementById('rm-chart-container');
+  if (!sel || !container) return;
+  const name = sel.value;
+  if (!name) { container.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">종목을 선택하세요</div>'; return; }
+
+  // 해당 종목이 포함된 세션에서 날짜별 최고 1RM 추출
+  const data = sessions
+    .filter(s => (s.exercises||[]).some(e => e.name === name))
+    .map(s => {
+      const ex = s.exercises.find(e => e.name === name);
+      const rm = Math.max(...ex.sets.map(set => {
+        const w = parseFloat(set.weight||0); const r = parseInt(set.reps||0);
+        return r > 0 && w > 0 ? (r === 1 ? w : Math.round(w*(1+r/30))) : 0;
+      }));
+      return { date: s.date, rm };
+    })
+    .filter(d => d.rm > 0)
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .slice(-12); // 최근 12세션
+
+  if (!data.length) {
+    container.innerHTML = `<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px;">${name} 세션이 없습니다</div>`;
+    return;
+  }
+
+  const maxRM = Math.max(...data.map(d => d.rm));
+  const minRM = Math.min(...data.map(d => d.rm));
+  const range = maxRM - minRM || 1;
+  const first = data[0].rm;
+  const last = data[data.length-1].rm;
+  const trend = last - first;
+
+  const barH = 80;
+  const w = 100 / data.length;
+
+  const bars = data.map((d, i) => {
+    const pct = ((d.rm - minRM) / range * 70 + 15);
+    const isLast = i === data.length - 1;
+    const col = isLast ? 'var(--accent)' : '#2a2a3a';
+    const label = d.date.slice(5).replace('-','/');
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;">
+        <div style="font-size:9px;color:${isLast?'var(--accent)':'var(--text3)'};">${d.rm}kg</div>
+        <div style="height:${barH}px;width:100%;display:flex;align-items:flex-end;">
+          <div style="width:100%;height:${pct}%;background:${col};border-radius:3px 3px 0 0;min-height:4px;transition:height 0.3s;"></div>
+        </div>
+        <div style="font-size:9px;color:var(--text3);white-space:nowrap;">${label}</div>
+      </div>`;
+  }).join('');
+
+  const trendColor = trend > 0 ? 'var(--accent)' : trend < 0 ? '#f54242' : 'var(--text3)';
+  const trendStr = trend > 0 ? `+${trend}kg ▲` : trend < 0 ? `${trend}kg ▼` : '변화 없음';
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:11px;color:var(--text3);">${data.length}세션 기록</span>
+      <span style="font-size:12px;font-weight:700;color:${trendColor};">추정 1RM ${trendStr}</span>
+    </div>
+    <div style="display:flex;gap:3px;align-items:flex-end;">${bars}</div>`;
+}
+
+// ==================== 주간 운동 밸런스 ====================
+function renderBalancePanel() {
+  const panel = document.getElementById('balance-panel');
+  if (!panel) return;
+
+  // 최근 4주 세션 기준
+  const fourWeeksAgo = new Date();
+  fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+  const cutoff = fourWeeksAgo.toISOString().split('T')[0];
+  const recent = sessions.filter(s => s.date >= cutoff);
+
+  if (!recent.length) {
+    panel.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px;">최근 4주 세션이 없습니다</div>';
+    return;
+  }
+
+  const types = ['push','pull','legs','running'];
+  const labels = { push:'💥 Push', pull:'🔗 Pull', legs:'🦵 Legs', running:'🏃 Run' };
+  const colors = { push:'#ff6b6b', pull:'#6b9fff', legs:'#a06bff', running:'#ff9f43' };
+
+  const counts = {};
+  const volumes = {};
+  types.forEach(t => { counts[t] = 0; volumes[t] = 0; });
+
+  recent.forEach(s => {
+    if (!types.includes(s.dayType)) return;
+    counts[s.dayType]++;
+    volumes[s.dayType] += s.exercises.reduce((sum,ex) =>
+      sum + ex.sets.reduce((s2,set) => s2 + parseFloat(set.weight||0)*parseInt(set.reps||0), 0), 0);
+  });
+
+  const maxCount = Math.max(...types.map(t => counts[t]), 1);
+
+  // 밸런스 피드백
+  const pushPull = counts.push && counts.pull ? counts.push / counts.pull : null;
+  let balanceTip = '';
+  if (pushPull !== null) {
+    if (pushPull > 1.5) balanceTip = '⚠️ Push 비중이 높습니다. Pull 세션을 늘려 어깨 불균형을 예방하세요.';
+    else if (pushPull < 0.67) balanceTip = '⚠️ Pull 비중이 높습니다. Push 세션과 균형을 맞춰보세요.';
+    else balanceTip = '✅ Push / Pull 밸런스가 양호합니다.';
+  }
+  if (!counts.legs) balanceTip += (balanceTip ? ' ' : '') + '💡 하체(Legs) 세션이 없습니다.';
+
+  const rows = types.map(t => {
+    const pct = maxCount ? (counts[t] / maxCount * 100) : 0;
+    const vol = volumes[t] > 0 ? `${Math.round(volumes[t]/1000).toFixed(1)}t` : '-';
+    return `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:700;color:${colors[t]};min-width:60px;">${labels[t]}</div>
+        <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:${colors[t]};border-radius:4px;transition:width 0.4s;"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);min-width:28px;text-align:right;">${counts[t]}회</div>
+        <div style="font-size:10px;color:var(--text3);min-width:30px;text-align:right;">${vol}</div>
+      </div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div style="font-size:10px;color:var(--text3);margin-bottom:10px;">최근 4주 기준</div>
+    ${rows}
+    ${balanceTip ? `<div style="margin-top:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:11px;color:var(--text2);line-height:1.6;">${balanceTip}</div>` : ''}`;
+}
+
+// ==================== 휴식일 감지 ====================
+function renderRestPanel() {
+  const panel = document.getElementById('rest-panel');
+  if (!panel) return;
+
+  if (!sessions.length) {
+    panel.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px;">세션이 없습니다</div>';
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const lastSession = sessions[0];
+  const lastDate = new Date(lastSession.date);
+  const todayDate = new Date(today);
+  const restDays = Math.floor((todayDate - lastDate) / (1000*60*60*24));
+
+  // 최근 7일 운동 여부
+  const last7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const ds = d.toISOString().split('T')[0];
+    const hasSession = sessions.some(s => s.date === ds);
+    const dow = ['일','월','화','수','목','금','토'][d.getDay()];
+    last7.push({ date: ds, dow, hasSession, isToday: ds === today });
+  }
+
+  // 같은 근육군 연속 운동 감지
+  let consecutiveWarning = '';
+  if (sessions.length >= 2) {
+    const s1 = sessions[0]; const s2 = sessions[1];
+    const dayDiff = Math.floor((new Date(s1.date) - new Date(s2.date)) / (1000*60*60*24));
+    if (Math.abs(dayDiff) <= 1 && s1.dayType === s2.dayType && s1.dayType !== 'running') {
+      const info = { push:'Push', pull:'Pull', legs:'Legs', free:'Free' };
+      consecutiveWarning = `⚠️ ${info[s1.dayType]||s1.dayType} 세션을 연속으로 진행했습니다. 해당 근육군에 48시간 이상 휴식을 권장합니다.`;
+    }
+  }
+
+  // 휴식 상태 평가
+  let restStatus = '', restColor = '';
+  if (restDays === 0) { restStatus = '오늘 운동함'; restColor = 'var(--accent)'; }
+  else if (restDays === 1) { restStatus = '어제 운동 · 오늘 쉬는 중 (최적 회복)'; restColor = 'var(--accent)'; }
+  else if (restDays === 2) { restStatus = `${restDays}일 휴식 중 · 회복 완료`; restColor = '#42c5f5'; }
+  else if (restDays <= 4) { restStatus = `${restDays}일 휴식 중 · 운동 준비됨`; restColor = '#f5a742'; }
+  else { restStatus = `${restDays}일 휴식 중 · 루틴 재개를 권장합니다`; restColor = '#f54242'; }
+
+  const dots = last7.map(d => `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;">
+      <div style="width:10px;height:10px;border-radius:50%;background:${d.hasSession ? 'var(--accent)' : d.isToday ? 'var(--border)' : 'var(--surface2)'};border:1px solid ${d.isToday ? 'var(--text3)' : 'transparent'};"></div>
+      <div style="font-size:9px;color:${d.isToday ? 'var(--text)' : 'var(--text3)'};">${d.dow}</div>
+    </div>`).join('');
+
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span style="font-size:13px;font-weight:700;color:${restColor};">${restStatus}</span>
+      <span style="font-size:11px;color:var(--text3);">최근 7일</span>
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:12px;">${dots}</div>
+    <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);"></span> 운동
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);margin-left:6px;"></span> 휴식
+    </div>
+    ${consecutiveWarning ? `<div style="margin-top:10px;padding:8px 10px;background:rgba(245,167,66,0.08);border:1px solid rgba(245,167,66,0.2);border-radius:8px;font-size:11px;color:#f5a742;line-height:1.6;">${consecutiveWarning}</div>` : ''}`;
+}
+
 function getPR(exerciseName) {
   let max = 0;
   for (const s of sessions) {
@@ -3822,9 +4156,11 @@ function requestGoalFeedback(session) {
 function saveProfile() {
   const h = parseFloat(document.getElementById('profile-height')?.value) || 0;
   const w = parseFloat(document.getElementById('profile-weight')?.value) || 0;
+  const a = parseInt(document.getElementById('profile-age')?.value) || 0;
+  const g = document.getElementById('profile-gender')?.value || '';
   const t = parseFloat(document.getElementById('profile-target')?.value) || 0;
   const p = parseInt(document.getElementById('profile-period')?.value) || 0;
-  localStorage.setItem('fitcore_profile', JSON.stringify({ height: h, weight: w, target: t, period: p }));
+  localStorage.setItem('fitcore_profile', JSON.stringify({ height: h, weight: w, age: a, gender: g, target: t, period: p }));
   updateProfileBMI();
 }
 
@@ -3832,6 +4168,8 @@ function loadProfile() {
   const p = JSON.parse(localStorage.getItem('fitcore_profile') || '{}');
   if (p.height) document.getElementById('profile-height').value = p.height;
   if (p.weight) document.getElementById('profile-weight').value = p.weight;
+  if (p.age)    document.getElementById('profile-age').value = p.age;
+  if (p.gender) document.getElementById('profile-gender').value = p.gender;
   if (p.target) document.getElementById('profile-target').value = p.target;
   if (p.period) document.getElementById('profile-period').value = p.period;
   updateProfileBMI();
@@ -3842,6 +4180,8 @@ function updateProfileBMI() {
   if (!bmiEl) return;
   const h = parseFloat(document.getElementById('profile-height')?.value) || 0;
   const w = parseFloat(document.getElementById('profile-weight')?.value) || 0;
+  const a = parseInt(document.getElementById('profile-age')?.value) || 0;
+  const g = document.getElementById('profile-gender')?.value || '';
   const t = parseFloat(document.getElementById('profile-target')?.value) || 0;
   const p = parseInt(document.getElementById('profile-period')?.value) || 0;
 
@@ -3850,8 +4190,15 @@ function updateProfileBMI() {
   const bmi = w / ((h / 100) ** 2);
   const bmiLabel = bmi < 18.5 ? '저체중' : bmi < 23 ? '정상' : bmi < 25 ? '과체중' : '비만';
 
-  const GOAL_WEEKLY = { bulk: 0.3, diet: -0.5, lean: 0.15 };
-  const weeklyChange = GOAL_WEEKLY[currentGoal] || 0;
+  // Mifflin-St Jeor BMR
+  let bmrText = '';
+  if (a && g) {
+    const bmr = g === 'male'
+      ? Math.round(10*w + 6.25*h - 5*a + 5)
+      : Math.round(10*w + 6.25*h - 5*a - 161);
+    const tdee = Math.round(bmr * 1.55); // 보통 활동량
+    bmrText = ` · 기초대사량 <strong>${bmr.toLocaleString()}kcal</strong> · TDEE <strong>${tdee.toLocaleString()}kcal</strong>`;
+  }
 
   let periodInfo = '';
   if (t && p) {
@@ -3859,12 +4206,9 @@ function updateProfileBMI() {
     const needed = p > 0 ? (diff / p).toFixed(2) : 0;
     const arrow = diff > 0 ? '▲' : '▼';
     periodInfo = ` · 목표: ${arrow}${Math.abs(diff).toFixed(1)}kg (${p}주, 주${needed}kg)`;
-  } else if (p && weeklyChange) {
-    const est = (w + weeklyChange * p).toFixed(1);
-    periodInfo = ` · ${p}주 후 예상: ${est}kg`;
   }
 
-  bmiEl.innerHTML = `BMI <strong>${bmi.toFixed(1)}</strong> (${bmiLabel}) · 주당 권장 변화: <strong>${weeklyChange > 0 ? '+' : ''}${weeklyChange}kg</strong>${periodInfo}`;
+  bmiEl.innerHTML = `BMI <strong>${bmi.toFixed(1)}</strong> (${bmiLabel})${bmrText}${periodInfo}`;
 }
 
 function getSessionContext() {
@@ -3894,7 +4238,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-btn')[tabMap[tab]].classList.add('active');
 
   if (tab === 'history') { renderHistory(); }
-  if (tab === 'feedback') { renderMetrics(); renderPR(); }
+  if (tab === 'feedback') { renderMetrics(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); }
 }
 
 function openCurrentGuide() {
