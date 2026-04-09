@@ -1151,6 +1151,31 @@
   }
   .month-toggle { font-size: 11px; color: var(--text3); }
 
+  .btn-clear-session {
+    background: none; border: 1px solid rgba(245,66,66,0.3);
+    color: var(--accent3); padding: 10px 14px; border-radius: 9px;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 13px;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-clear-session:hover {
+    border-color: var(--accent3); background: rgba(245,66,66,0.08);
+  }
+
+  /* 순서 변경 드래그 핸들 */
+  .drag-handle {
+    cursor: grab; color: var(--text3); font-size: 16px;
+    padding: 0 4px; user-select: none; flex-shrink: 0;
+    display: flex; align-items: center; touch-action: none;
+  }
+  .drag-handle:active { cursor: grabbing; }
+  .exercise-card.dragging {
+    opacity: 0.4; border-color: var(--accent);
+  }
+  .exercise-card.drag-over {
+    border-color: var(--accent);
+    background: rgba(200,245,66,0.04);
+  }
+
   /* GOAL CARD 개선 */
   .goal-card-guide {
     font-size: 9px; color: var(--text3); line-height: 1.5;
@@ -1589,6 +1614,9 @@
         <button class="btn-load-session" onclick="openLoadSessionModal()" title="이전 세션 불러오기">
           📂 세션 불러오기
         </button>
+        <button class="btn-clear-session" onclick="clearCurrentSession()" title="기록 전체 지우기">
+          🗑 전체 지우기
+        </button>
         <button class="btn-save-session" onclick="saveSession()">
           💾 세션 저장
         </button>
@@ -1636,6 +1664,9 @@
       <div class="add-exercise-area" style="margin-top:4px;">
         <button class="btn-load-session" onclick="openLoadSessionModal()" title="이전 세션 불러오기">
           📂 세션 불러오기
+        </button>
+        <button class="btn-clear-session" onclick="clearCurrentSession()" title="기록 전체 지우기">
+          🗑 전체 지우기
         </button>
         <button class="btn-save-session" onclick="saveSession()">
           💾 세션 저장
@@ -1955,6 +1986,70 @@ function updateCategory(exIdx, val) {
 
 
 // 반복수 평균으로 자동 분류
+
+// ==================== 운동 순서 드래그 ====================
+let dragState = null;
+
+function startDrag(e, fromIdx, card) {
+  e.preventDefault();
+  const isTouch = e.type === 'touchstart';
+  const startY = isTouch ? e.touches[0].clientY : e.clientY;
+
+  card.classList.add('dragging');
+  dragState = { fromIdx, card, startY, currentIdx: fromIdx };
+
+  const onMove = (ev) => {
+    const y = ev.touches ? ev.touches[0].clientY : ev.clientY;
+    const cards = document.querySelectorAll('.exercise-card:not(.dragging)');
+    let overIdx = null;
+
+    cards.forEach((c, i) => {
+      const rect = c.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (y < mid && overIdx === null) overIdx = i >= dragState.fromIdx ? i : i;
+      c.classList.remove('drag-over');
+    });
+
+    // 가장 가까운 카드 강조
+    let closest = null, closestDist = Infinity;
+    const allCards = document.querySelectorAll('.exercise-card');
+    allCards.forEach((c, i) => {
+      if (c.classList.contains('dragging')) return;
+      const rect = c.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      const dist = Math.abs(y - mid);
+      if (dist < closestDist) { closestDist = dist; closest = { el: c, idx: i }; }
+    });
+    if (closest) {
+      closest.el.classList.add('drag-over');
+      dragState.toIdx = closest.idx;
+    }
+  };
+
+  const onEnd = () => {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onEnd);
+    document.removeEventListener('touchmove', onMove);
+    document.removeEventListener('touchend', onEnd);
+
+    card.classList.remove('dragging');
+    document.querySelectorAll('.exercise-card').forEach(c => c.classList.remove('drag-over'));
+
+    if (dragState && dragState.toIdx !== undefined && dragState.toIdx !== dragState.fromIdx) {
+      const moved = currentExercises.splice(dragState.fromIdx, 1)[0];
+      currentExercises.splice(dragState.toIdx, 0, moved);
+      renderExerciseList();
+      saveDraft();
+    }
+    dragState = null;
+  };
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onEnd);
+  document.addEventListener('touchmove', onMove, { passive: false });
+  document.addEventListener('touchend', onEnd);
+}
+
 function autoDetectFocus(ex) {
   return autoDetectFocusFromSets(ex.sets);
 }
@@ -1977,6 +2072,7 @@ function renderExerciseList() {
     card.className = 'exercise-card';
     card.innerHTML = `
       <div class="card-header">
+        <div class="drag-handle" title="드래그하여 순서 변경">⠿</div>
         <div class="card-num">${String(exIdx + 1).padStart(2, '0')}</div>
         <input class="exercise-name-input" placeholder="운동 이름 입력..."
           value="${ex.name}"
@@ -2008,6 +2104,13 @@ function renderExerciseList() {
         <span style="font-size:9px;color:var(--text3);">자동분류</span>
       </div>
     `;
+    // 드래그 이벤트 연결
+    const handle = card.querySelector('.drag-handle');
+    if (handle) {
+      handle.addEventListener('mousedown', (e) => startDrag(e, exIdx, card));
+      handle.addEventListener('touchstart', (e) => startDrag(e, exIdx, card), { passive: false });
+    }
+
     container.appendChild(card);
   });
 }
@@ -2165,6 +2268,33 @@ function discardDraft() {
   exerciseCounter = 0;
   addExercise();
   showToast('새로 시작합니다');
+}
+
+
+function clearCurrentSession() {
+  const hasWeight = currentExercises.some(ex => ex.name || ex.sets.some(s => s.weight || s.reps));
+  const hasRunning = currentRunningLaps.some(l => l.km || l.min || l.sec);
+
+  if (!hasWeight && !hasRunning) {
+    showToast('지울 기록이 없습니다');
+    return;
+  }
+
+  if (!confirm('현재 작성 중인 기록을 모두 지우시겠습니까?')) return;
+
+  // 웨이트 초기화
+  currentExercises = [];
+  exerciseCounter = 0;
+  addExercise();
+
+  // 러닝 초기화
+  currentRunningLaps = [];
+  renderRunningLaps();
+
+  // 임시저장 삭제
+  localStorage.removeItem('fitcore_draft');
+
+  showToast('✅ 기록이 전체 삭제되었습니다');
 }
 
 function saveSession() {
