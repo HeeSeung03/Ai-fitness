@@ -918,34 +918,30 @@
     letter-spacing: 1px; margin-bottom: 10px;
   }
   .day-cards {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   }
   .day-card {
     background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 8px;
+    border-radius: 12px; padding: 18px 12px;
     cursor: pointer; transition: all 0.2s;
-    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
     text-align: center;
   }
-  .day-card:hover { border-color: var(--text3); transform: translateY(-1px); }
-  .day-card-icon { font-size: 20px; line-height: 1; }
-  .day-card-name { font-size: 12px; font-weight: 700; color: var(--text2); }
-  .day-card.active-push { border-color: #ff6b6b; background: rgba(255,107,107,0.08); }
-  .day-card.active-push .day-card-name { color: #ff6b6b; }
-  .day-card.active-pull { border-color: #6b9fff; background: rgba(107,159,255,0.08); }
-  .day-card.active-pull .day-card-name { color: #6b9fff; }
-  .day-card.active-legs { border-color: #a06bff; background: rgba(160,107,255,0.08); }
-  .day-card.active-legs .day-card-name { color: #a06bff; }
+  .day-card:hover { border-color: var(--text3); transform: translateY(-2px); }
+  .day-card-icon { font-size: 28px; line-height: 1; }
+  .day-card-name { font-size: 14px; font-weight: 700; color: var(--text2); }
+  .day-card.active-workout { border-color: var(--accent); background: rgba(200,245,66,0.08); }
+  .day-card.active-workout .day-card-name { color: var(--accent); }
   .day-card.active-running { border-color: #ff9f43; background: rgba(255,159,67,0.08); }
   .day-card.active-running .day-card-name { color: #ff9f43; }
   .day-card.active-free { border-color: var(--accent); background: rgba(200,245,66,0.08); }
   .day-card.active-free .day-card-name { color: var(--accent); }
 
   @media (max-width: 480px) {
-    .day-cards { grid-template-columns: repeat(5, 1fr); gap: 4px; }
-    .day-card { padding: 10px 4px; }
-    .day-card-icon { font-size: 16px; }
-    .day-card-name { font-size: 9px; }
+    .day-cards { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .day-card { padding: 14px 8px; }
+    .day-card-icon { font-size: 24px; }
+    .day-card-name { font-size: 13px; }
   }
 
   /* COMPARISON MODAL */
@@ -1134,10 +1130,7 @@
   }
   .hf-tab:hover { border-color: var(--text2); color: var(--text2); }
   .hf-tab.active { border-color: var(--accent); background: rgba(200,245,66,0.1); color: var(--accent); }
-  .hf-tab.active-push   { border-color: #ff6b6b; background: rgba(255,107,107,0.1); color: #ff6b6b; }
-  .hf-tab.active-pull   { border-color: #6b9fff; background: rgba(107,159,255,0.1); color: #6b9fff; }
-  .hf-tab.active-legs   { border-color: #a06bff; background: rgba(160,107,255,0.1); color: #a06bff; }
-  .hf-tab.active-running{ border-color: #ff9f43; background: rgba(255,159,67,0.1);  color: #ff9f43; }
+  .hf-tab.active { border-color: var(--accent); background: rgba(200,245,66,0.1); color: var(--accent); }
 
   /* 월별 묶음 */
   .month-group { margin-bottom: 24px; }
@@ -1252,6 +1245,83 @@
   }
   .body-diff-up   { color: var(--accent); font-size: 9px; }
   .body-diff-down { color: #f54242; font-size: 9px; }
+
+  /* 근육군 볼륨 목표 패널 */
+  .muscle-vol-row {
+    margin-bottom: 16px;
+  }
+  .muscle-vol-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 6px;
+  }
+  .muscle-vol-name {
+    font-size: 12px; font-weight: 700; color: var(--text2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .muscle-vol-stats {
+    font-size: 11px; color: var(--text3);
+  }
+  .muscle-vol-stats .hit { color: var(--accent); font-weight: 700; }
+  .muscle-vol-stats .over { color: #42c5f5; font-weight: 700; }
+  .muscle-vol-stats .miss { color: #f5a742; font-weight: 700; }
+  .muscle-vol-bar-wrap {
+    height: 6px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden; position: relative;
+  }
+  .muscle-vol-bar-fill {
+    height: 100%; border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+  .muscle-vol-target-line {
+    position: absolute; top: 0; width: 2px; height: 100%;
+    background: rgba(255,255,255,0.2);
+  }
+  /* 선 그래프 */
+  .line-chart-wrap {
+    position: relative; width: 100%; overflow: hidden;
+  }
+  .line-chart-wrap svg {
+    width: 100%; display: block;
+  }
+  .line-chart-legend {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 10px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 10px; color: var(--text3); cursor: pointer;
+  }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .muscle-goal-note {
+    font-size: 10px; color: var(--text3);
+    padding: 8px 10px; background: var(--surface2);
+    border-radius: 6px; margin-bottom: 12px; line-height: 1.6;
+  }
+  .week-selector {
+    display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .week-btn {
+    padding: 4px 12px; border-radius: 16px; font-size: 11px;
+    border: 1px solid var(--border); background: none;
+    color: var(--text3); cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif; transition: all 0.15s;
+  }
+  .week-btn.active {
+    border-color: var(--accent); background: rgba(200,245,66,0.1);
+    color: var(--accent); font-weight: 700;
+  }
+
+  /* 근력·근비대 배지 공통 스타일 */
+  .focus-badge {
+    font-size: 10px; font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    line-height: 1;
+  }
+  .focus-badge.strength   { color: #f5a742; }
+  .focus-badge.hypertrophy{ color: #c8f542; }
+  .focus-badge.none       { color: var(--text3); }
 
   /* GOAL CARD 개선 */
   .goal-card-guide {
@@ -1691,25 +1761,20 @@
     <div class="day-section">
       <div class="day-section-title">📅 오늘의 운동 타입</div>
       <div class="day-cards">
-        <div class="day-card active-push" id="day-btn-push" onclick="setDayType('push')">
-          <div class="day-card-icon">💥</div>
-          <div class="day-card-name">Push Day</div>
-        </div>
-        <div class="day-card" id="day-btn-pull" onclick="setDayType('pull')">
-          <div class="day-card-icon">🔗</div>
-          <div class="day-card-name">Pull Day</div>
-        </div>
-        <div class="day-card" id="day-btn-legs" onclick="setDayType('legs')">
-          <div class="day-card-icon">🦵</div>
-          <div class="day-card-name">Legs Day</div>
+        <div class="day-card active-workout" id="day-btn-workout" onclick="setDayType('workout')">
+          <div class="day-card-icon">🏋️</div>
+          <div class="day-card-name">Workout</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px;line-height:1.3;">부위 자동 감지</div>
         </div>
         <div class="day-card" id="day-btn-free" onclick="setDayType('free')">
-          <div class="day-card-icon">✨</div>
-          <div class="day-card-name">Free</div>
+          <div class="day-card-icon">💪</div>
+          <div class="day-card-name">Weak Day</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px;line-height:1.3;">약점 보완</div>
         </div>
         <div class="day-card" id="day-btn-running" onclick="setDayType('running')">
           <div class="day-card-icon">🏃</div>
           <div class="day-card-name">Running</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px;line-height:1.3;">유산소·심폐</div>
         </div>
       </div>
     </div>
@@ -1806,11 +1871,14 @@
 
     <!-- 필터 탭 -->
     <div class="history-filter-bar" id="history-filter-bar">
-      <button class="hf-tab active" data-filter="all" onclick="setHistoryFilter('all',this)">전체</button>
-      <button class="hf-tab" data-filter="push"    onclick="setHistoryFilter('push',this)">💥 Push</button>
-      <button class="hf-tab" data-filter="pull"    onclick="setHistoryFilter('pull',this)">🔗 Pull</button>
-      <button class="hf-tab" data-filter="legs"    onclick="setHistoryFilter('legs',this)">🦵 Legs</button>
-      <button class="hf-tab" data-filter="running" onclick="setHistoryFilter('running',this)">🏃 Running</button>
+      <button class="hf-tab active" data-filter="all"      onclick="setHistoryFilter('all',this)">전체</button>
+      <button class="hf-tab" data-filter="Chest"     onclick="setHistoryFilter('Chest',this)">Chest</button>
+      <button class="hf-tab" data-filter="Back"      onclick="setHistoryFilter('Back',this)">Back</button>
+      <button class="hf-tab" data-filter="Shoulder"  onclick="setHistoryFilter('Shoulder',this)">Shoulder</button>
+      <button class="hf-tab" data-filter="Legs"      onclick="setHistoryFilter('Legs',this)">Legs</button>
+      <button class="hf-tab" data-filter="Biceps"    onclick="setHistoryFilter('Biceps',this)">Biceps</button>
+      <button class="hf-tab" data-filter="Triceps"   onclick="setHistoryFilter('Triceps',this)">Triceps</button>
+      <button class="hf-tab" data-filter="running"   onclick="setHistoryFilter('running',this)">🏃 Run</button>
     </div>
 
     <div class="compare-mode-bar">
@@ -1834,13 +1902,7 @@
         <div class="panel-header">📊 운동 분석 지표</div>
         <div class="panel-body">
           <!-- 타입 선택 탭 -->
-          <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">
-            <button class="metrics-tab-btn active" id="mtab-push" onclick="switchMetricsTab('push')" style="flex:1;min-width:60px;padding:7px 4px;border-radius:8px;border:1px solid #ff6b6b;background:rgba(255,107,107,0.12);color:#ff6b6b;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;">💥 Push</button>
-            <button class="metrics-tab-btn" id="mtab-pull" onclick="switchMetricsTab('pull')" style="flex:1;min-width:60px;padding:7px 4px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text3);font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;">🔗 Pull</button>
-            <button class="metrics-tab-btn" id="mtab-legs" onclick="switchMetricsTab('legs')" style="flex:1;min-width:60px;padding:7px 4px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text3);font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;">🦵 Legs</button>
-            <button class="metrics-tab-btn" id="mtab-running" onclick="switchMetricsTab('running')" style="flex:1;min-width:60px;padding:7px 4px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text3);font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;">🏃 Run</button>
-            <button class="metrics-tab-btn" id="mtab-free" onclick="switchMetricsTab('free')" style="flex:1;min-width:60px;padding:7px 4px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text3);font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;">✨ 자유</button>
-          </div>
+          <div style="display:flex;gap:5px;margin-bottom:18px;flex-wrap:wrap;" id="metrics-tab-bar"></div>
           <div class="metrics-list" id="metrics-list"></div>
 
         </div>
@@ -1863,7 +1925,7 @@
         <div class="panel-body">
           <div style="margin-bottom:10px;">
             <select id="rm-exercise-select" onchange="renderRMChart()"
-              style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:12px;outline:none;width:100%;">
+              style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:12px;outline:none;width:100%;">
               <option value="">종목 선택</option>
             </select>
           </div>
@@ -1884,6 +1946,22 @@
         <div class="panel-header">🛌 회복 & 휴식 현황</div>
         <div class="panel-body">
           <div id="rest-panel"></div>
+        </div>
+      </div>
+
+      <!-- 근육군별 주간 볼륨 목표 vs 달성 -->
+      <div class="feedback-panel">
+        <div class="panel-header">🎯 근육군별 주간 볼륨 목표</div>
+        <div class="panel-body">
+          <div id="muscle-volume-panel"></div>
+        </div>
+      </div>
+
+      <!-- 근육군별 볼륨 추이 선 그래프 -->
+      <div class="feedback-panel">
+        <div class="panel-header">📉 근육군별 볼륨 추이 (8주)</div>
+        <div class="panel-body">
+          <div id="muscle-trend-chart"></div>
         </div>
       </div>
 
@@ -1953,7 +2031,7 @@
 let sessions = JSON.parse(localStorage.getItem('fitcore_sessions') || '[]');
 let currentExercises = [];
 let exerciseCounter = 0;
-let currentDayType = 'push';
+let currentDayType = 'workout';
 let currentGoal = localStorage.getItem('fitcore_goal') || 'bulk';
 let currentTab = 'record';
 let editSession = null;
@@ -1961,18 +2039,69 @@ let compareModeOn = false;
 let compareSelected = []; // [sessionA, sessionB]
 let historyFilter = 'all'; // 현재 필터
 
+const MUSCLE_KO_TO_EN = {
+  '가슴': 'Chest', '등': 'Back', '어깨': 'Shoulder',
+  '하체': 'Legs', '이두': 'Biceps', '삼두': 'Triceps', '기타': 'Other'
+};
+const MUSCLE_EN_TO_KO = Object.fromEntries(
+  Object.entries(MUSCLE_KO_TO_EN).map(([k,v]) => [v,k])
+);
+
 const EXERCISES_DB = {
-  '가슴': ['벤치프레스', '인클라인 벤치프레스', '디클라인 벤치프레스', '케이블 플라이', '딥스', '푸시업'],
-  '등': ['데드리프트', '바벨 로우', '풀업', '랫풀다운', '시티드 로우', 'T바 로우'],
-  '어깨': ['오버헤드 프레스', '사이드 레터럴 레이즈', '프론트 레이즈', '페이스 풀', '업라이트 로우'],
-  '하체': ['스쿼트', '레그프레스', '런지', '레그컬', '레그익스텐션', '카프레이즈', '힙스러스트'],
-  '이두': ['바벨컬', '해머컬', '인클라인 덤벨컬', '케이블컬', '프리처컬'],
-  '삼두': ['트라이셉스 푸시다운', '오버헤드 익스텐션', '스컬크러셔', 'Close-grip 벤치'],
+  'Chest':   ['벤치프레스', '인클라인 벤치프레스', '디클라인 벤치프레스', '케이블 플라이', '딥스', '푸시업'],
+  'Back':    ['데드리프트', '바벨 로우', '풀업', '랫풀다운', '시티드 로우', 'T바 로우'],
+  'Shoulder':['오버헤드 프레스', '사이드 레터럴 레이즈', '프론트 레이즈', '페이스 풀', '업라이트 로우'],
+  'Legs':    ['스쿼트', '레그프레스', '런지', '레그컬', '레그익스텐션', '카프레이즈', '힙스러스트'],
+  'Biceps':  ['바벨컬', '해머컬', '인클라인 덤벨컬', '케이블컬', '프리처컬'],
+  'Triceps': ['트라이셉스 푸시다운', '오버헤드 익스텐션', '스컬크러셔', 'Close-grip 벤치'],
 };
 
 const ALL_EXERCISES = Object.values(EXERCISES_DB).flat();
 
 // ==================== INIT ====================
+
+// ==================== 기존 세션 마이그레이션 ====================
+function migrateSessionsToMuscles() {
+  const DAYTYPE_TO_MUSCLES = {
+    push: ['Chest', 'Shoulder', 'Triceps'],
+    pull: ['Back', 'Biceps'],
+    legs: ['Legs'],
+  };
+  let changed = false;
+  sessions.forEach(s => {
+    // 1. muscles[] 없는 세션에 추가
+    if (!s.muscles) {
+      // dayType 기반 초기값
+      const base = DAYTYPE_TO_MUSCLES[s.dayType] || [];
+      // 종목 카테고리로 정밀 감지
+      const fromCats = [...new Set(
+        (s.exercises||[]).map(ex => {
+          const cat = ex.category || '';
+          return MUSCLE_KO_TO_EN[cat] || cat;
+        }).filter(m => m && m !== 'Other' && m !== '기타')
+      )];
+      s.muscles = fromCats.length ? fromCats : base;
+      changed = true;
+    }
+    // 2. 카테고리 한글 → 영문 변환
+    (s.exercises||[]).forEach(ex => {
+      if (ex.category && MUSCLE_KO_TO_EN[ex.category]) {
+        ex.category = MUSCLE_KO_TO_EN[ex.category];
+        changed = true;
+      }
+    });
+    // 3. push/pull/legs dayType → workout으로 변환
+    if (['push','pull','legs'].includes(s.dayType)) {
+      s.dayType = 'workout';
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
+    console.log('✅ 세션 마이그레이션 완료');
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // 기존 세션 focus 자동 마이그레이션
   let migrated = false;
@@ -1988,6 +2117,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (migrated) localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
 
+  migrateSessionsToMuscles();
+  buildMetricsTabBar();
   setToday();
   renderQuickChips();
   initGoal();
@@ -2001,6 +2132,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initRMSelect();
   renderBalancePanel();
   renderRestPanel();
+  renderMuscleVolumePanel();
+  renderMuscleTrendChart();
 
   // 작성 중 복구 확인
   checkDraftRecovery();
@@ -2212,7 +2345,7 @@ function renderExerciseList() {
           oninput="updateExerciseName(${exIdx}, this.value)"
           onblur="saveDraft()">
         <select class="category-select" onchange="updateCategory(${exIdx}, this.value)">
-          ${['가슴','등','어깨','하체','이두','삼두','기타'].map(cat =>
+          ${['Chest','Back','Shoulder','Legs','Biceps','Triceps','Other'].map(cat =>
             `<option value="${cat}" ${(ex.category||getCategory(ex.name))===cat?'selected':''}>${cat}</option>`
           ).join('')}
         </select>
@@ -2305,10 +2438,10 @@ function updateSet(exIdx, setIdx, field, val) {
         const badge = card.querySelector('.auto-focus-badge');
         if (badge) {
           badge.innerHTML = detected === 'strength'
-            ? '<span style="color:#f5a742;font-weight:700;">💪 근력</span>'
+            ? '<span style="font-size:10px;color:#f5a742;font-weight:700;">💪 근력</span>'
             : detected === 'hypertrophy'
-            ? '<span style="color:#c8f542;font-weight:700;">🔥 근비대</span>'
-            : '<span style="color:var(--text3);">—</span>';
+            ? '<span style="font-size:10px;color:#c8f542;font-weight:700;">🔥 근비대</span>'
+            : '<span style="font-size:10px;color:var(--text3);">—</span>';
         }
       }
     }
@@ -2493,15 +2626,29 @@ function saveSession() {
     return;
   }
 
+  // 부위 자동 감지
+  const detectedMuscles = [...new Set(
+    validExercises.map(ex => {
+      const cat = ex.category && ex.category !== '기타' && ex.category !== 'Other'
+        ? ex.category : getCategory(ex.name);
+      return MUSCLE_KO_TO_EN[cat] || cat;
+    }).filter(m => m && m !== 'Other')
+  )];
+
   const session = {
     id: Date.now(),
     date,
     dayType: currentDayType,
+    muscles: detectedMuscles,
     exercises: validExercises.map(ex => ({
       name: ex.name,
-      category: ex.category && ex.category !== '기타' ? ex.category : getCategory(ex.name),
+      category: (() => {
+        const cat = ex.category && ex.category !== '기타' && ex.category !== 'Other'
+          ? ex.category : getCategory(ex.name);
+        return MUSCLE_KO_TO_EN[cat] || cat;
+      })(),
       focus: ex.focus || '',
-            sets: ex.sets.filter(s => s.weight || s.reps)
+      sets: ex.sets.filter(s => s.weight || s.reps)
     }))
   };
 
@@ -2529,6 +2676,8 @@ function saveSession() {
   initRMSelect();
   renderBalancePanel();
   renderRestPanel();
+  renderMuscleVolumePanel();
+  renderMuscleTrendChart();
 
   // 과거 날짜 세션은 비교 모달 생략
   if (isPastDate) {
@@ -2624,16 +2773,24 @@ function updateRunningSummary() {
 
 // ==================== DAY TYPE ====================
 const DAY_TYPE_INFO = {
-  push:    { label: 'Push Day',  icon: '💥', cls: 'push' },
-  pull:    { label: 'Pull Day',  icon: '🔗', cls: 'pull' },
-  legs:    { label: 'Legs Day',  icon: '🦵', cls: 'legs' },
-  running: { label: 'Running',   icon: '🏃', cls: 'running' },
-  free:    { label: 'Free',  icon: '✨', cls: 'free' },
+  workout: { label: 'Workout',  icon: '🏋️', cls: 'workout' },
+  running: { label: 'Running',  icon: '🏃', cls: 'running' },
+  free:    { label: 'Weak Day', icon: '💪', cls: 'free' },
+};
+
+// 근육군별 색상·아이콘
+const MUSCLE_INFO = {
+  'Chest':   { color: '#ff6b6b', icon: '💪' },
+  'Back':    { color: '#6b9fff', icon: '🔗' },
+  'Shoulder':{ color: '#c8a0ff', icon: '💪' },
+  'Legs':    { color: '#a06bff', icon: '🦵' },
+  'Biceps':  { color: '#42c5f5', icon: '💪' },
+  'Triceps': { color: '#f5a742', icon: '💪' },
 };
 
 function setDayType(type) {
   currentDayType = type;
-  ['push','pull','legs','running','free'].forEach(t => {
+  ['workout','running','free'].forEach(t => {
     const card = document.getElementById(`day-btn-${t}`);
     if (!card) return;
     card.className = 'day-card' + (t === type ? ` active-${t}` : '');
@@ -2663,7 +2820,7 @@ function switchRecordArea(type) {
 }
 
 function initDayType() {
-  ['push','pull','legs','running','free'].forEach(t => {
+  ['workout','running','free'].forEach(t => {
     const card = document.getElementById(`day-btn-${t}`);
     if (!card) return;
     card.className = 'day-card' + (t === currentDayType ? ` active-${t}` : '');
@@ -3054,10 +3211,17 @@ function renderHistory() {
     return;
   }
 
-  // 필터 적용
-  const filtered = historyFilter === 'all'
-    ? sessions
-    : sessions.filter(s => s.dayType === historyFilter);
+  // 필터 적용 — 근육군 또는 running 기준
+  const filtered = historyFilter === 'all' ? sessions
+    : historyFilter === 'running' ? sessions.filter(s => s.dayType === 'running')
+    : sessions.filter(s => {
+        if (s.muscles && s.muscles.length) return s.muscles.includes(historyFilter);
+        // muscles 없는 구버전 세션: 종목 카테고리로 판단
+        return (s.exercises||[]).some(ex => {
+          const cat = ex.category || '';
+          return (MUSCLE_KO_TO_EN[cat] || cat) === historyFilter;
+        });
+      });
 
   if (filtered.length === 0) {
     grid.innerHTML = `<div style="color:var(--text3);font-size:13px;text-align:center;padding:32px 0;">해당 타입의 세션이 없습니다</div>`;
@@ -3078,10 +3242,21 @@ function renderHistory() {
     const [year, mon] = month.split('-');
     const label = `${year}년 ${parseInt(mon)}월 (${byMonth[month].length}세션)`;
     const cards = byMonth[month].slice(0, 20).map(s => {
-    const dayInfo = DAY_TYPE_INFO[s.dayType] || { label: '운동', icon: '💪' };
-    const dayBadgeColor = {push:'#ff6b6b',pull:'#6b9fff',legs:'#a06bff',running:'#ff9f43',free:'#c8f542'}[s.dayType] || 'var(--text3)';
+    const dayInfo = DAY_TYPE_INFO[s.dayType] || { label: 'Workout', icon: '🏋️' };
     const dateStr = formatDate(s.date);
-    const badge = `<span style="font-size:11px;font-weight:600;color:${dayBadgeColor};background:${dayBadgeColor}18;padding:3px 9px;border-radius:12px;border:1px solid ${dayBadgeColor}44;">${dayInfo.icon} ${dayInfo.label}</span>`;
+    // 근육군 태그 뱃지 생성
+    const muscleTags = s.dayType === 'running' ? ['🏃 Running']
+      : s.dayType === 'free' ? ['💪 Weak Day']
+      : (() => {
+          const mList = s.muscles?.length ? s.muscles
+            : [...new Set((s.exercises||[]).map(ex => MUSCLE_KO_TO_EN[ex.category||''] || ex.category || 'Other').filter(m => m && m !== 'Other'))];
+          return mList.length ? mList : ['Workout'];
+        })();
+    const badge = muscleTags.map(m => {
+      const info = MUSCLE_INFO[m] || { color: '#c8f542' };
+      const col = m === '🏃 Running' ? '#ff9f43' : m === '💪 Weak Day' ? '#c8f542' : info.color;
+      return `<span style="font-size:10px;font-weight:600;color:${col};background:${col}18;padding:2px 8px;border-radius:10px;border:1px solid ${col}44;margin-left:3px;">${m}</span>`;
+    }).join('');
 
     // ── 러닝 카드 ──
     if (s.dayType === 'running') {
@@ -3144,8 +3319,8 @@ function renderHistory() {
           ${badge}
         </div>
         <div class="history-exercises">${(s.exercises||[]).map(e => {
-          const badge = e.focus === 'strength' ? '<span style="font-size:9px;color:#f5a742;margin-left:3px;">근력</span>'
-                      : e.focus === 'hypertrophy' ? '<span style="font-size:9px;color:#c8f542;margin-left:3px;">근비대</span>' : '';
+          const badge = e.focus === 'strength' ? '<span style="font-size:10px;color:#f5a742;font-weight:700;margin-left:3px;">💪 근력</span>'
+                      : e.focus === 'hypertrophy' ? '<span style="font-size:10px;color:#c8f542;font-weight:700;margin-left:3px;">🔥 근비대</span>' : '';
           return e.name + badge;
         }).join(' · ')}</div>
         <div class="history-stats">
@@ -3223,10 +3398,10 @@ function openModal(sessionId) {
         </div>
       </div>
     </div>
-    <button onclick="deleteSession(${s.id})" style="margin-top:16px;background:none;border:1px solid var(--border);color:var(--accent3);padding:8px 16px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;">
+    <button onclick="deleteSession(${s.id})" style="margin-top:16px;background:none;border:1px solid var(--border);color:var(--accent3);padding:8px 16px;border-radius:7px;cursor:pointer;font-size:12px;">
       🗑 이 세션 삭제
     </button>
-    <button onclick="closeModalBtn(); openEditModal(${s.id})" style="margin-top:8px;margin-left:8px;background:none;border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;">
+    <button onclick="closeModalBtn(); openEditModal(${s.id})" style="margin-top:8px;margin-left:8px;background:none;border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:7px;cursor:pointer;font-size:12px;">
       ✏️ 이 기록 수정하기
     </button>
   `;
@@ -3342,6 +3517,8 @@ function deleteSession(id) {
   initRMSelect();
   renderBalancePanel();
   renderRestPanel();
+  renderMuscleVolumePanel();
+  renderMuscleTrendChart();
   showToast('세션이 삭제되었습니다');
 }
 
@@ -3357,7 +3534,7 @@ function openEditModal(sessionId) {
 
 function renderEditModal() {
   const s = editSession;
-  const cats = ['가슴','등','어깨','하체','이두','삼두','기타'];
+  const cats = ['Chest','Back','Shoulder','Legs','Biceps','Triceps','Other'];
   const dayTypes = Object.entries(DAY_TYPE_INFO).map(([k,v]) =>
     `<option value="${k}" ${s.dayType===k?'selected':''}>${v.icon} ${v.label}</option>`
   ).join('');
@@ -3374,7 +3551,7 @@ function renderEditModal() {
       </div>
       <div style="margin:6px 0 10px;font-size:10px;color:var(--text3);display:flex;align-items:center;gap:6px;">
         특화:
-        ${autoDetectFocusFromSets(ex.sets) === 'strength' ? '<span style="color:#f5a742;font-weight:700;">💪 근력</span>' : autoDetectFocusFromSets(ex.sets) === 'hypertrophy' ? '<span style="color:#c8f542;font-weight:700;">🔥 근비대</span>' : '<span>—</span>'}
+        ${autoDetectFocusFromSets(ex.sets) === 'strength' ? '<span style="font-size:10px;color:#f5a742;font-weight:700;">💪 근력</span>' : autoDetectFocusFromSets(ex.sets) === 'hypertrophy' ? '<span style="font-size:10px;color:#c8f542;font-weight:700;">🔥 근비대</span>' : '<span style="font-size:10px;color:var(--text3);">—</span>'}
         <span style="font-size:9px;">(횟수 기준 자동)</span>
       </div>
       <div class="edit-set-header" style="display:grid;grid-template-columns:44px 1fr 1fr 28px;gap:6px;margin-bottom:6px;font-size:10px;color:var(--text3);text-align:center;margin-top:10px;">
@@ -3407,12 +3584,12 @@ function renderEditModal() {
       <div style="flex:1;min-width:120px;">
         <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">날짜</div>
         <input type="date" value="${s.date}" onchange="editSession.date=this.value"
-          style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;">
+          style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:13px;outline:none;">
       </div>
       <div style="flex:1;min-width:120px;">
         <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">운동 타입</div>
         <select onchange="editSession.dayType=this.value"
-          style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;appearance:none;">
+          style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:13px;outline:none;appearance:none;">
           ${dayTypes}
         </select>
       </div>
@@ -3611,21 +3788,43 @@ function getLast7Days() {
 let currentMetricsTab = 'push';
 
 const METRICS_TAB_COLORS = {
-  push:    { active: '#ff6b6b', bg: 'rgba(255,107,107,0.12)', label: '💥 Push Day' },
-  pull:    { active: '#6b9fff', bg: 'rgba(107,159,255,0.12)', label: '🔗 Pull Day' },
-  legs:    { active: '#a06bff', bg: 'rgba(160,107,255,0.12)', label: '🦵 Legs Day' },
-  running: { active: '#ff9f43', bg: 'rgba(255,159,67,0.12)',  label: '🏃 Running' },
-  free:    { active: '#c8f542', bg: 'rgba(200,245,66,0.12)',  label: '✨ 자유' },
+  'Chest':    { active: '#ff6b6b', bg: 'rgba(255,107,107,0.12)', label: 'Chest' },
+  'Back':     { active: '#6b9fff', bg: 'rgba(107,159,255,0.12)', label: 'Back' },
+  'Shoulder': { active: '#c8a0ff', bg: 'rgba(200,160,255,0.12)', label: 'Shoulder' },
+  'Legs':     { active: '#a06bff', bg: 'rgba(160,107,255,0.12)', label: 'Legs' },
+  'Biceps':   { active: '#42c5f5', bg: 'rgba(66,197,245,0.12)',  label: 'Biceps' },
+  'Triceps':  { active: '#f5a742', bg: 'rgba(245,167,66,0.12)',  label: 'Triceps' },
+  'running':  { active: '#ff9f43', bg: 'rgba(255,159,67,0.12)',  label: '🏃 Running' },
+  'free':     { active: '#c8f542', bg: 'rgba(200,245,66,0.12)',  label: '💪 Weak Day' },
 };
+
+function buildMetricsTabBar() {
+  const bar = document.getElementById('metrics-tab-bar');
+  if (!bar) return;
+  const tabs = Object.keys(METRICS_TAB_COLORS);
+  bar.innerHTML = tabs.map((t, i) => {
+    const c = METRICS_TAB_COLORS[t];
+    const isActive = i === 0;
+    return `<button class="metrics-tab-btn ${isActive?'':'inactive'}" data-tab="${t}"
+      onclick="switchMetricsTab('${t}')"
+      style="flex:1;min-width:58px;padding:6px 3px;border-radius:8px;
+        border:1px solid ${isActive ? c.active : 'var(--border)'};
+        background:${isActive ? c.bg : 'none'};
+        color:${isActive ? c.active : 'var(--text3)'};
+        font-size:11px;font-weight:700;cursor:pointer;
+        transition:all 0.2s;">
+      ${c.label}
+    </button>`;
+  }).join('');
+  if (!currentMetricsTab) currentMetricsTab = tabs[0];
+}
 
 function switchMetricsTab(type) {
   currentMetricsTab = type;
-
-  // 탭 버튼 스타일 업데이트
-  ['push','pull','legs','running','free'].forEach(t => {
-    const btn = document.getElementById(`mtab-${t}`);
-    if (!btn) return;
+  document.querySelectorAll('.metrics-tab-btn').forEach(btn => {
+    const t = btn.dataset.tab;
     const c = METRICS_TAB_COLORS[t];
+    if (!c) return;
     if (t === type) {
       btn.style.border = `1px solid ${c.active}`;
       btn.style.background = c.bg;
@@ -3636,15 +3835,22 @@ function switchMetricsTab(type) {
       btn.style.color = 'var(--text3)';
     }
   });
-
   renderMetrics();
 }
 
 function renderMetrics() {
   const container = document.getElementById('metrics-list');
   const type = currentMetricsTab;
-  const typeSessions = sessions.filter(s => s.dayType === type);
   const typeLabel = METRICS_TAB_COLORS[type]?.label || type;
+  // 근육군 기반 필터 (running/free는 dayType, 나머지는 muscles[])
+  const typeSessions = ['running','free'].includes(type)
+    ? sessions.filter(s => s.dayType === type)
+    : sessions.filter(s => {
+        if (s.muscles?.length) return s.muscles.includes(type);
+        return (s.exercises||[]).some(ex =>
+          (MUSCLE_KO_TO_EN[ex.category||''] || ex.category) === type
+        );
+      });
 
   if (typeSessions.length === 0) {
     container.innerHTML = `<div style="color:var(--text3);font-size:13px;text-align:center;padding:24px 0;">${typeLabel} 세션이 없습니다.<br>기록을 저장하면 분석이 시작됩니다.</div>`;
@@ -3675,26 +3881,40 @@ function calculateMetrics(typeSessions) {
   const recent = typeSessions[0];
   const prev   = typeSessions[1];
 
+  // ── 예상 칼로리 ──
   const estimateCalories = (s) => {
     const totalSets = s.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
     const totalVol  = getTotalVolume(s);
     return Math.round(totalSets * 8 + totalVol * 0.05);
   };
-
   const recentCal = estimateCalories(recent);
   const prevCal   = estimateCalories(prev);
   const calChange = prevCal > 0 ? ((recentCal - prevCal) / prevCal * 100) : 0;
 
-  // 운동 강도 (세트당 평균 볼륨)
-  const getIntensity = (s) => {
-    const allSets   = s.exercises.flatMap(e => e.sets);
-    const validSets = allSets.filter(set => set.weight && set.reps);
-    if (!validSets.length) return 0;
-    return validSets.reduce((sum, set) => sum + parseFloat(set.weight||0) * parseInt(set.reps||0), 0) / validSets.length;
+  // ── 점진적 과부하: 총 볼륨(kg) 직접 비교 ──
+  const recentVol = Math.round(getTotalVolume(recent));
+  const prevVol   = Math.round(getTotalVolume(prev));
+  const volChange = prevVol > 0 ? ((recentVol - prevVol) / prevVol * 100) : 0;
+
+  // ── 운동 강도: Epley 공식으로 추정 최고 1RM ──
+  // 1RM = weight × (1 + reps / 30)
+  const getMax1RM = (s) => {
+    let max = 0;
+    s.exercises.forEach(ex => {
+      ex.sets.forEach(set => {
+        const w = parseFloat(set.weight || 0);
+        const r = parseInt(set.reps || 0);
+        if (w > 0 && r > 0) {
+          const rm = w * (1 + r / 30);
+          if (rm > max) max = rm;
+        }
+      });
+    });
+    return Math.round(max * 10) / 10;
   };
-  const recentInt    = getIntensity(recent);
-  const prevInt      = getIntensity(prev);
-  const intensityChange = prevInt > 0 ? ((recentInt - prevInt) / prevInt * 100) : 0;
+  const recentRM = getMax1RM(recent);
+  const prevRM   = getMax1RM(prev);
+  const rmChange = prevRM > 0 ? ((recentRM - prevRM) / prevRM * 100) : 0;
 
   // 이 타입의 주간 빈도
   const weekTypeSessions = typeSessions.filter(s => {
@@ -3702,11 +3922,11 @@ function calculateMetrics(typeSessions) {
     return (new Date() - d) < 7 * 24 * 60 * 60 * 1000;
   }).length;
 
-  // 날짜 차이 (이전 → 최근)
+  // 날짜 차이
   const dayDiff = Math.round((new Date(recent.date) - new Date(prev.date)) / (1000 * 60 * 60 * 24));
 
-  const calPct = Math.min(Math.max(calChange + 50, 0), 100);
-  const intPct = Math.min(Math.max(intensityChange + 50, 0), 100);
+  const volPct = Math.min(Math.max(volChange + 50, 0), 100);
+  const rmPct  = Math.min(Math.max(rmChange  + 50, 0), 100);
   const typeLabel = METRICS_TAB_COLORS[currentMetricsTab]?.label || '';
 
   const getColor = (val) => val >= 0
@@ -3727,25 +3947,35 @@ function calculateMetrics(typeSessions) {
     },
     {
       name: '🔄 점진적 과부하',
-      value: `${calChange >= 0 ? '+' : ''}${calChange.toFixed(1)}%`,
-      pct: calPct,
-      color: getColor(calChange),
-      desc: calChange >= 5
-        ? `✅ 이전 ${typeLabel} 대비 운동량이 증가했습니다!`
-        : calChange >= 0
-        ? `⚠️ 운동량 변화가 적습니다. 세트 또는 무게 증량을 고려하세요.`
-        : `🔴 이전 ${typeLabel} 대비 운동량 감소. 회복 또는 디로드인지 확인하세요.`
+      value: `${volChange >= 0 ? '+' : ''}${volChange.toFixed(1)}%`,
+      pct: volPct,
+      color: getColor(volChange),
+      desc: (() => {
+        const diff = recentVol - prevVol;
+        const sign = diff >= 0 ? '+' : '';
+        const trend = volChange >= 5
+          ? `✅ 총 볼륨 증가! ${prevVol.toLocaleString()}kg → ${recentVol.toLocaleString()}kg (${sign}${diff.toLocaleString()}kg)`
+          : volChange >= 0
+          ? `⚠️ ${prevVol.toLocaleString()}kg → ${recentVol.toLocaleString()}kg. 세트·무게 증량을 고려하세요.`
+          : `🔴 ${prevVol.toLocaleString()}kg → ${recentVol.toLocaleString()}kg (${sign}${diff.toLocaleString()}kg). 회복 구간인지 확인하세요.`;
+        return trend;
+      })()
     },
     {
       name: '⚡ 운동 강도',
-      value: `${intensityChange >= 0 ? '+' : ''}${intensityChange.toFixed(1)}%`,
-      pct: intPct,
-      color: getColor(intensityChange),
-      desc: intensityChange >= 3
-        ? `✅ 강도가 높아졌습니다. 다음 ${typeLabel} 충분한 회복이 중요합니다.`
-        : intensityChange >= 0
-        ? `⚠️ 강도 소폭 증가. 더 무거운 무게나 고반복 세트를 추가해보세요.`
-        : `🔴 강도 감소. 과훈련일 수 있으니 회복에 집중하세요.`
+      value: `${rmChange >= 0 ? '+' : ''}${rmChange.toFixed(1)}%`,
+      pct: rmPct,
+      color: getColor(rmChange),
+      desc: (() => {
+        const sign = recentRM >= prevRM ? '+' : '';
+        const diff = Math.round((recentRM - prevRM) * 10) / 10;
+        const trend = rmChange >= 3
+          ? `✅ 추정 1RM 상승! ${prevRM}kg → ${recentRM}kg (${sign}${diff}kg). 신경근 적응 진행 중입니다.`
+          : rmChange >= 0
+          ? `⚠️ 추정 1RM ${prevRM}kg → ${recentRM}kg. 고중량 세트를 추가해보세요.`
+          : `🔴 추정 1RM ${prevRM}kg → ${recentRM}kg (${diff}kg). 피로 누적을 확인하세요.`;
+        return trend;
+      })()
     },
     {
       name: '📅 간격',
@@ -3856,18 +4086,20 @@ function renderBalancePanel() {
     return;
   }
 
-  const types = ['push','pull','legs','running'];
-  const labels = { push:'💥 Push', pull:'🔗 Pull', legs:'🦵 Legs', running:'🏃 Run' };
-  const colors = { push:'#ff6b6b', pull:'#6b9fff', legs:'#a06bff', running:'#ff9f43' };
+  const types = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+  const labels = { Chest:'Chest', Back:'Back', Shoulder:'Shoulder', Legs:'Legs', Biceps:'Biceps', Triceps:'Triceps' };
+  const colors = { Chest:'#ff6b6b', Back:'#6b9fff', Shoulder:'#c8a0ff', Legs:'#a06bff', Biceps:'#42c5f5', Triceps:'#f5a742' };
 
   const counts = {};
   const volumes = {};
   types.forEach(t => { counts[t] = 0; volumes[t] = 0; });
 
   recent.forEach(s => {
-    if (!types.includes(s.dayType)) return;
-    counts[s.dayType]++;
-    volumes[s.dayType] += s.exercises.reduce((sum,ex) =>
+    const mList = s.muscles || (s.exercises||[]).map(ex => MUSCLE_KO_TO_EN[ex.category||'']||ex.category).filter(Boolean);
+    mList.filter(m => types.includes(m)).forEach(m => {
+      counts[m]++;
+    });
+    volumes[mList[0]] = (volumes[mList[0]]||0) + s.exercises.reduce((sum,ex) =>
       sum + ex.sets.reduce((s2,set) => s2 + parseFloat(set.weight||0)*parseInt(set.reps||0), 0), 0);
   });
 
@@ -3914,58 +4146,132 @@ function renderRestPanel() {
   }
 
   const today = new Date().toISOString().split('T')[0];
-  const lastSession = sessions[0];
-  const lastDate = new Date(lastSession.date);
-  const todayDate = new Date(today);
-  const restDays = Math.floor((todayDate - lastDate) / (1000*60*60*24));
+  const todayMs = new Date(today).getTime();
+  const MUSCLES = Object.keys(MUSCLE_VOLUME_GOALS);
 
-  // 최근 7일 운동 여부
+  // ── 부위별 마지막 운동일 계산 ──
+  const lastTrainedMap = {};
+  MUSCLES.forEach(m => { lastTrainedMap[m] = null; });
+
+  sessions.forEach(s => {
+    const mList = s.muscles?.length ? s.muscles
+      : (s.exercises||[]).map(ex => MUSCLE_KO_TO_EN[ex.category||''] || ex.category).filter(m => MUSCLES.includes(m));
+    [...new Set(mList)].forEach(m => {
+      if (MUSCLES.includes(m) && (!lastTrainedMap[m] || s.date > lastTrainedMap[m])) {
+        lastTrainedMap[m] = s.date;
+      }
+    });
+  });
+
+  // ── 부위별 회복 상태 판단 ──
+  const muscleStatus = MUSCLES.map(m => {
+    const lastDate = lastTrainedMap[m];
+    if (!lastDate) return { m, hours: null, status: 'never', label: '기록 없음', color: 'var(--text3)' };
+
+    const hours = Math.floor((todayMs - new Date(lastDate).getTime()) / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+
+    let status, label, color;
+    if (hours < 48) {
+      status = 'recovering';
+      label = `${hours < 24 ? '오늘' : '1일 전'} · 회복 중 (${48 - hours}h 남음)`;
+      color = '#f54242';
+    } else if (hours < 96) {
+      status = 'ready';
+      label = `${days}일 전 · 회복 완료 ✅`;
+      color = 'var(--accent)';
+    } else if (hours < 168) {
+      status = 'optimal';
+      label = `${days}일 전 · 운동 적기 ✅`;
+      color = '#42c5f5';
+    } else {
+      status = 'overdue';
+      label = `${days}일 전 · 오랜만 ⚠️`;
+      color = '#f5a742';
+    }
+    return { m, hours, days, status, label, color };
+  });
+
+  // ── 오늘 추천 부위 ──
+  const recommended = muscleStatus
+    .filter(s => s.status === 'ready' || s.status === 'optimal')
+    .map(s => s.m);
+
+  // ── 최근 7일 운동 도트 ──
   const last7 = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const ds = d.toISOString().split('T')[0];
-    const hasSession = sessions.some(s => s.date === ds);
+    const daySessions = sessions.filter(s => s.date === ds);
+    const dayMuscles = [...new Set(daySessions.flatMap(s =>
+      s.muscles?.length ? s.muscles
+        : (s.exercises||[]).map(ex => MUSCLE_KO_TO_EN[ex.category||'']||ex.category).filter(m => MUSCLES.includes(m))
+    ))];
     const dow = ['일','월','화','수','목','금','토'][d.getDay()];
-    last7.push({ date: ds, dow, hasSession, isToday: ds === today });
+    last7.push({ ds, dow, muscles: dayMuscles, isToday: ds === today });
   }
 
-  // 같은 근육군 연속 운동 감지
-  let consecutiveWarning = '';
-  if (sessions.length >= 2) {
-    const s1 = sessions[0]; const s2 = sessions[1];
-    const dayDiff = Math.floor((new Date(s1.date) - new Date(s2.date)) / (1000*60*60*24));
-    if (Math.abs(dayDiff) <= 1 && s1.dayType === s2.dayType && s1.dayType !== 'running') {
-      const info = { push:'Push', pull:'Pull', legs:'Legs', free:'Free' };
-      consecutiveWarning = `⚠️ ${info[s1.dayType]||s1.dayType} 세션을 연속으로 진행했습니다. 해당 근육군에 48시간 이상 휴식을 권장합니다.`;
-    }
-  }
+  // ── 렌더 ──
+  const muscleRows = muscleStatus.map(s => {
+    const info = MUSCLE_VOLUME_GOALS[s.m];
+    const barPct = s.hours === null ? 0
+      : s.status === 'recovering' ? Math.round((s.hours / 48) * 100)
+      : 100;
+    const barColor = s.color;
+    return `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:700;color:${info.color};min-width:64px;">${s.m}</div>
+        <div style="flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${Math.min(barPct,100)}%;background:${barColor};border-radius:3px;transition:width 0.4s;"></div>
+        </div>
+        <div style="font-size:10px;color:${s.color};min-width:130px;text-align:right;">${s.label}</div>
+      </div>`;
+  }).join('');
 
-  // 휴식 상태 평가
-  let restStatus = '', restColor = '';
-  if (restDays === 0) { restStatus = '오늘 운동함'; restColor = 'var(--accent)'; }
-  else if (restDays === 1) { restStatus = '어제 운동 · 오늘 쉬는 중 (최적 회복)'; restColor = 'var(--accent)'; }
-  else if (restDays === 2) { restStatus = `${restDays}일 휴식 중 · 회복 완료`; restColor = '#42c5f5'; }
-  else if (restDays <= 4) { restStatus = `${restDays}일 휴식 중 · 운동 준비됨`; restColor = '#f5a742'; }
-  else { restStatus = `${restDays}일 휴식 중 · 루틴 재개를 권장합니다`; restColor = '#f54242'; }
+  const dots = last7.map(d => {
+    const hasMuscles = d.muscles.length > 0;
+    const muscleColors = d.muscles.slice(0,3).map(m => MUSCLE_VOLUME_GOALS[m]?.color || '#555568');
+    const dotContent = hasMuscles
+      ? muscleColors.map((col, i) =>
+          `<div style="width:${10/muscleColors.length}px;height:10px;background:${col};"></div>`
+        ).join('')
+      : '';
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;">
+        <div style="width:10px;height:10px;border-radius:50%;overflow:hidden;display:flex;
+          background:${hasMuscles ? 'transparent' : d.isToday ? 'var(--border)' : 'var(--surface2)'};
+          border:1px solid ${d.isToday ? 'var(--text3)' : 'transparent'};">
+          ${dotContent}
+        </div>
+        <div style="font-size:9px;color:${d.isToday ? 'var(--text)' : 'var(--text3)'};">${d.dow}</div>
+      </div>`;
+  }).join('');
 
-  const dots = last7.map(d => `
-    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;">
-      <div style="width:10px;height:10px;border-radius:50%;background:${d.hasSession ? 'var(--accent)' : d.isToday ? 'var(--border)' : 'var(--surface2)'};border:1px solid ${d.isToday ? 'var(--text3)' : 'transparent'};"></div>
-      <div style="font-size:9px;color:${d.isToday ? 'var(--text)' : 'var(--text3)'};">${d.dow}</div>
-    </div>`).join('');
+  const recHtml = recommended.length
+    ? `<div style="margin-top:14px;padding:10px 12px;background:rgba(200,245,66,0.06);
+        border:1px solid rgba(200,245,66,0.2);border-radius:8px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">오늘 운동 추천 부위</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${recommended.map(m => {
+            const col = MUSCLE_VOLUME_GOALS[m]?.color || 'var(--accent)';
+            return `<span style="font-size:11px;font-weight:700;color:${col};background:${col}18;
+              padding:3px 10px;border-radius:12px;border:1px solid ${col}44;">${m}</span>`;
+          }).join('')}
+        </div>
+      </div>`
+    : '';
 
   panel.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <span style="font-size:13px;font-weight:700;color:${restColor};">${restStatus}</span>
-      <span style="font-size:11px;color:var(--text3);">최근 7일</span>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:12px;">
+      48h 미만 = 회복 중 · 48~96h = 회복 완료 · 96h+ = 운동 적기
     </div>
-    <div style="display:flex;gap:4px;margin-bottom:12px;">${dots}</div>
-    <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);"></span> 운동
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);margin-left:6px;"></span> 휴식
+    ${muscleRows}
+    <div style="margin-top:14px;margin-bottom:6px;display:flex;justify-content:space-between;">
+      <span style="font-size:10px;color:var(--text3);">최근 7일</span>
     </div>
-    ${consecutiveWarning ? `<div style="margin-top:10px;padding:8px 10px;background:rgba(245,167,66,0.08);border:1px solid rgba(245,167,66,0.2);border-radius:8px;font-size:11px;color:#f5a742;line-height:1.6;">${consecutiveWarning}</div>` : ''}`;
+    <div style="display:flex;gap:4px;margin-bottom:8px;">${dots}</div>
+    ${recHtml}`;
 }
 
 function getPR(exerciseName) {
@@ -4028,7 +4334,7 @@ function renderPR() {
       <button onclick="togglePRMore(this)" style="
         grid-column:1/-1; background:none; border:1px dashed var(--border);
         color:var(--text2); padding:9px; border-radius:8px; cursor:pointer;
-        font-family:'Noto Sans KR',sans-serif; font-size:12px; transition:all 0.2s;
+         font-size:12px; transition:all 0.2s;
         margin-top:2px;
       " onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
@@ -4122,15 +4428,10 @@ function initGoal() {
 // ==================== 히스토리 필터 ====================
 function setHistoryFilter(filter, btn) {
   historyFilter = filter;
-  // 탭 스타일 갱신
   document.querySelectorAll('.hf-tab').forEach(b => {
     b.className = 'hf-tab';
   });
-  if (filter === 'all') {
-    btn.classList.add('active');
-  } else {
-    btn.classList.add(`active-${filter}`);
-  }
+  btn.classList.add('active');
   renderHistory();
 }
 
@@ -4238,6 +4539,216 @@ function showManualCompareModal(prevSession, newSession) {
 
   overlay.classList.add('show');
   requestGoalFeedback(newSession);
+}
+
+
+// ==================== 근육군별 주간 볼륨 목표 ====================
+
+// 근비대 기준 주간 권장 세트 수 (Schoenfeld et al. 기반)
+const MUSCLE_VOLUME_GOALS = {
+  '가슴':   { min: 10, max: 20, color: '#ff6b6b', icon: '💥' },
+  '등':     { min: 10, max: 20, color: '#6b9fff', icon: '🔗' },
+  '어깨':   { min: 6,  max: 16, color: '#c8a0ff', icon: '💪' },
+  '하체':   { min: 10, max: 20, color: '#a06bff', icon: '🦵' },
+  '이두':   { min: 6,  max: 14, color: '#42c5f5', icon: '💪' },
+  '삼두':   { min: 6,  max: 14, color: '#f5a742', icon: '💪' },
+};
+
+function getWeekSessions(weeksAgo = 0) {
+  const end = new Date();
+  end.setDate(end.getDate() - weeksAgo * 7);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 6);
+  const endStr = end.toISOString().split('T')[0];
+  const startStr = start.toISOString().split('T')[0];
+  return sessions.filter(s => s.date >= startStr && s.date <= endStr);
+}
+
+function calcMuscleSetsByWeek(weeksAgo = 0) {
+  const weekSessions = getWeekSessions(weeksAgo);
+  const sets = {};
+  Object.keys(MUSCLE_VOLUME_GOALS).forEach(m => { sets[m] = 0; });
+  weekSessions.forEach(s => {
+    (s.exercises || []).forEach(ex => {
+      const cat = MUSCLE_KO_TO_EN[ex.category||''] || ex.category || '';
+      if (sets[cat] !== undefined) {
+        sets[cat] += ex.sets.filter(set => parseInt(set.reps) > 0).length;
+      }
+    });
+  });
+  return sets;
+}
+
+function renderMuscleVolumePanel() {
+  const el = document.getElementById('muscle-volume-panel');
+  if (!el) return;
+
+  const sets = calcMuscleSetsByWeek(0);
+  const totalSessions = getWeekSessions(0).length;
+
+  let html = `
+    <div class="muscle-goal-note">
+      💡 근비대 기준 권장 주간 세트 수입니다 (Schoenfeld 연구 기반).<br>
+      이번 주 <strong>${totalSessions}세션</strong> 기록 기준.
+    </div>`;
+
+  let allMet = true;
+  Object.entries(MUSCLE_VOLUME_GOALS).forEach(([muscle, goal]) => {
+    const actual = sets[muscle] || 0;
+    const pct = Math.min((actual / goal.max) * 100, 120);
+    const targetPct = (goal.min / goal.max) * 100;
+
+    let statusCls = 'miss', statusTxt = '부족';
+    if (actual >= goal.max) { statusCls = 'over'; statusTxt = '충분 이상'; }
+    else if (actual >= goal.min) { statusCls = 'hit'; statusTxt = '목표 달성'; }
+    else allMet = false;
+
+    const barColor = statusCls === 'hit' ? 'var(--accent)'
+      : statusCls === 'over' ? '#42c5f5' : '#f5a742';
+
+    html += `
+      <div class="muscle-vol-row">
+        <div class="muscle-vol-header">
+          <div class="muscle-vol-name">
+            <span>${goal.icon}</span>
+            <span>${muscle}</span>
+          </div>
+          <div class="muscle-vol-stats">
+            <span class="${statusCls}">${actual}세트</span>
+            <span> / 목표 ${goal.min}~${goal.max}세트 · ${statusTxt}</span>
+          </div>
+        </div>
+        <div class="muscle-vol-bar-wrap">
+          <div class="muscle-vol-bar-fill"
+            style="width:${pct}%;background:${barColor};"></div>
+          <div class="muscle-vol-target-line"
+            style="left:${targetPct}%;"></div>
+        </div>
+      </div>`;
+  });
+
+  // 총평
+  const metCount = Object.entries(MUSCLE_VOLUME_GOALS).filter(([m, g]) =>
+    (sets[m] || 0) >= g.min
+  ).length;
+  const total = Object.keys(MUSCLE_VOLUME_GOALS).length;
+  const summaryColor = metCount === total ? 'var(--accent)'
+    : metCount >= total / 2 ? '#f5a742' : '#f54242';
+  const summaryMsg = metCount === total
+    ? '✅ 모든 근육군 목표 달성!'
+    : metCount >= total / 2
+    ? `⚠️ ${total - metCount}개 근육군 볼륨 보충 필요`
+    : `🔴 ${total - metCount}개 근육군 볼륨 크게 부족`;
+
+  html += `
+    <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);
+      border-radius:8px;font-size:12px;font-weight:700;color:${summaryColor};">
+      ${summaryMsg}
+    </div>`;
+
+  el.innerHTML = html;
+}
+
+// ==================== 근육군별 볼륨 추이 선 그래프 (8주) ====================
+function renderMuscleTrendChart() {
+  const el = document.getElementById('muscle-trend-chart');
+  if (!el) return;
+
+  const muscles = Object.keys(MUSCLE_VOLUME_GOALS);
+  const colors = Object.fromEntries(
+    muscles.map(m => [m, MUSCLE_VOLUME_GOALS[m].color])
+  );
+
+  // 8주치 데이터 수집
+  const weeks = [];
+  for (let i = 7; i >= 0; i--) {
+    const end = new Date();
+    end.setDate(end.getDate() - i * 7);
+    const start = new Date(end);
+    start.setDate(start.getDate() - 6);
+    const label = `${start.getMonth()+1}/${start.getDate()}`;
+    const sets = calcMuscleSetsByWeek(i);
+    weeks.push({ label, sets });
+  }
+
+  // SVG 선 그래프 생성
+  const W = 600, H = 180;
+  const PAD = { top: 16, right: 16, bottom: 28, left: 32 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top - PAD.bottom;
+
+  const maxVal = Math.max(
+    ...weeks.flatMap(w => muscles.map(m => w.sets[m] || 0)),
+    20
+  );
+
+  const xStep = chartW / (weeks.length - 1);
+  const yScale = chartH / maxVal;
+
+  const toX = i => PAD.left + i * xStep;
+  const toY = v => PAD.top + chartH - v * yScale;
+
+  // 목표선 (min)
+  const goalLines = muscles.map(m => {
+    const minY = toY(MUSCLE_VOLUME_GOALS[m].min);
+    return `<line x1="${PAD.left}" y1="${minY}" x2="${W - PAD.right}" y2="${minY}"
+      stroke="${colors[m]}" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.3"/>`;
+  }).join('');
+
+  // Y축 눈금
+  const yTicks = [0, Math.round(maxVal/4), Math.round(maxVal/2), Math.round(maxVal*3/4), maxVal];
+  const yGrid = yTicks.map(v => {
+    const y = toY(v);
+    return `<line x1="${PAD.left}" y1="${y}" x2="${W-PAD.right}" y2="${y}"
+        stroke="var(--border)" stroke-width="0.5"/>
+      <text x="${PAD.left-4}" y="${y+4}" text-anchor="end"
+        font-size="9" fill="var(--text3)">${v}</text>`;
+  }).join('');
+
+  // X축 레이블
+  const xLabels = weeks.map((w, i) => {
+    if (i % 2 !== 0 && i !== weeks.length - 1) return '';
+    return `<text x="${toX(i)}" y="${H - 4}" text-anchor="middle"
+      font-size="9" fill="var(--text3)">${w.label}</text>`;
+  }).join('');
+
+  // 각 근육군 선 + 점
+  const lines = muscles.map(m => {
+    const pts = weeks.map((w, i) => `${toX(i)},${toY(w.sets[m]||0)}`).join(' ');
+    const dots = weeks.map((w, i) => {
+      const v = w.sets[m] || 0;
+      if (v === 0) return '';
+      return `<circle cx="${toX(i)}" cy="${toY(v)}" r="3"
+        fill="${colors[m]}" opacity="0.9"/>`;
+    }).join('');
+    return `
+      <polyline points="${pts}" fill="none" stroke="${colors[m]}"
+        stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"
+        opacity="0.85"/>
+      ${dots}`;
+  }).join('');
+
+  const svg = `
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
+      style="overflow:visible;">
+      ${yGrid}
+      ${goalLines}
+      ${lines}
+      ${xLabels}
+    </svg>`;
+
+  const legend = muscles.map(m => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${colors[m]};"></div>
+      <span>${m}</span>
+    </div>`).join('');
+
+  el.innerHTML = `
+    <div class="muscle-goal-note" style="margin-bottom:10px;">
+      점선은 근비대 최소 목표 세트 수입니다. 선이 점선 위에 있으면 목표 달성입니다.
+    </div>
+    <div class="line-chart-wrap">${svg}</div>
+    <div class="line-chart-legend">${legend}</div>`;
 }
 
 // ==================== 규칙 기반 피드백 (근력·근비대 + 볼륨·1RM 비교) ====================
@@ -4583,7 +5094,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-btn')[tabMap[tab]].classList.add('active');
 
   if (tab === 'history') { renderHistory(); }
-  if (tab === 'feedback') { renderMetrics(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); }
+  if (tab === 'feedback') { renderMetrics(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); renderMuscleVolumePanel(); renderMuscleTrendChart(); }
 }
 
 function openCurrentGuide() {
@@ -4597,7 +5108,7 @@ const GUIDE_CONTENT = {
     icon: '📋', title: '운동 기록 가이드',
     steps: [
       { num:'01', title:'목표 선택', desc:'🏋️ 벌크업 / 🥗 다이어트 / ⚡ 린매스업 중 현재 목표를 선택하세요.\n선택한 목표에 따라 AI 코칭 방향이 달라집니다.' },
-      { num:'02', title:'운동 타입 선택', desc:'오늘 어떤 운동인지 선택하세요.\n💥 Push Day (가슴·어깨·삼두) · 🔗 Pull Day (등·이두) · 🦵 Legs Day (하체) · 🏃 Free\n같은 타입끼리 자동 비교 분석됩니다.' },
+      { num:'02', title:'운동 타입 선택', desc:'오늘 어떤 운동인지 선택하세요.\n💥 Push Day (가슴·어깨·삼두) · 🔗 Pull Day (등·이두) · 🦵 Legs Day (하체) · 💪 Weak Day (약점 보완)\n같은 타입끼리 자동 비교 분석됩니다.' },
       { num:'03', title:'날짜 & 운동 추가', desc:'날짜를 선택하고 빠른 추가 칩을 탭하거나\n[+ 운동 추가] 버튼으로 종목을 추가하세요.\n이름 입력 시 자동완성이 지원됩니다.' },
       { num:'04', title:'무게 & 횟수 입력', desc:'각 세트마다 무게(kg)와 횟수(회)를 입력하세요.\n[+ 세트 추가]로 세트 수를 늘릴 수 있습니다.' },
       { num:'05', title:'세션 저장', desc:'[💾 세션 저장]을 누르면 저장됩니다.\n저장 후 이전 같은 타입 세션과\n자동 비교 결과가 팝업으로 표시됩니다!' },
@@ -4608,7 +5119,7 @@ const GUIDE_CONTENT = {
     icon: '📊', title: '히스토리 가이드',
     steps: [
       { num:'01', title:'세션 카드 확인', desc:'저장된 세션이 최신순으로 표시됩니다.\n날짜, 운동 타입, 종목 목록,\n총 세트, 예상 소모 칼로리를 한눈에 확인하세요.' },
-      { num:'02', title:'운동 타입 배지', desc:'카드 우측 상단의 컬러 배지로 타입을 구분합니다.\n💥 빨강 = Push · 🔗 파랑 = Pull\n🦵 보라 = Legs · 🏃 초록 = Free' },
+      { num:'02', title:'운동 타입 배지', desc:'카드 우측 상단의 컬러 배지로 타입을 구분합니다.\n💥 빨강 = Push · 🔗 파랑 = Pull\n🦵 보라 = Legs · 💪 연두 = Weak Day' },
       { num:'03', title:'세션 상세 보기', desc:'카드를 클릭하면 상세 화면이 열립니다.\n운동별 전체 세트·무게·횟수와\n예상 소모 칼로리를 확인할 수 있습니다.' },
       { num:'04', title:'세션 삭제', desc:'상세 화면 하단 [🗑 이 세션 삭제] 버튼으로\n해당 세션을 삭제할 수 있습니다.' },
     ],
@@ -5202,7 +5713,7 @@ function autoClassifyDayType() {
         position:fixed; bottom:0; left:0; right:0; z-index:9999;
         background:#1a1a24; border-top:1px solid #2a2a3a;
         padding:14px 20px 28px; display:flex; align-items:center; gap:12px;
-        font-family:'Noto Sans KR',sans-serif; animation: slideUp 0.3s ease;
+         animation: slideUp 0.3s ease;
       `;
       banner.innerHTML = `
         <div style="font-size:28px;">🏋️</div>
