@@ -2041,19 +2041,51 @@ let historyFilter = 'all'; // 현재 필터
 
 const MUSCLE_KO_TO_EN = {
   '가슴': 'Chest', '등': 'Back', '어깨': 'Shoulder',
-  '하체': 'Legs', '이두': 'Biceps', '삼두': 'Triceps', '기타': 'Other'
+  '하체': 'Legs', '이두': 'Biceps', '삼두': 'Triceps'
 };
 const MUSCLE_EN_TO_KO = Object.fromEntries(
   Object.entries(MUSCLE_KO_TO_EN).map(([k,v]) => [v,k])
 );
 
 const EXERCISES_DB = {
-  'Chest':   ['벤치프레스', '인클라인 벤치프레스', '디클라인 벤치프레스', '케이블 플라이', '딥스', '푸시업'],
-  'Back':    ['데드리프트', '바벨 로우', '풀업', '랫풀다운', '시티드 로우', 'T바 로우'],
-  'Shoulder':['오버헤드 프레스', '사이드 레터럴 레이즈', '프론트 레이즈', '페이스 풀', '업라이트 로우'],
-  'Legs':    ['스쿼트', '레그프레스', '런지', '레그컬', '레그익스텐션', '카프레이즈', '힙스러스트'],
-  'Biceps':  ['바벨컬', '해머컬', '인클라인 덤벨컬', '케이블컬', '프리처컬'],
-  'Triceps': ['트라이셉스 푸시다운', '오버헤드 익스텐션', '스컬크러셔', 'Close-grip 벤치'],
+  'Chest':   [
+    '벤치프레스','인클라인 벤치프레스','인클라인 벤치','디클라인 벤치프레스','디클라인 벤치',
+    '케이블 플라이','케이블플라이','덤벨 플라이','덤벨플라이','딥스','푸시업','체스트프레스',
+    '체스트 프레스','펙덱플라이','펙 덱 플라이','펙덱 플라이','인클라인 덤벨 프레스',
+    '스미스 벤치프레스','스미스 인클라인','케이블 크로스오버',
+  ],
+  'Back':    [
+    '데드리프트','루마니안 데드리프트','루마니안 데드','스모 데드리프트',
+    '바벨 로우','바벨로우','덤벨 로우','덤벨로우','원암 로우','원 암 로우',
+    '풀업','친업','랫풀다운','렛풀다운','와이드 풀 다운','와이드 랫풀다운',
+    '시티드 로우','케이블 로우','T바 로우','티바 로우','하이로우','로우로우',
+    '바벨 데드리프트','스트레이트 암 풀다운',
+  ],
+  'Shoulder':[
+    '오버헤드 프레스','OHP','ohp','숄더프레스','숄더 프레스','덤벨 숄더프레스',
+    '사이드 레터럴 레이즈','사이드 레이즈','사레레','싸레레','레터럴 레이즈',
+    '프론트 레이즈','페이스 풀','업라이트 로우','리어 델트','리어델트',
+    '밀리터리 프레스','아놀드 프레스','케이블 레터럴',
+  ],
+  'Legs':    [
+    '스쿼트','핵 스쿼트','핵스쿼트','스미스 스쿼트','불가리안 스플릿 스쿼트','불가리안',
+    '레그프레스','레그 프레스','레그 익스텐션','레그익스텐션','레그 컬','레그컬',
+    '런지','덤벨 런지','바벨 런지','힙스러스트','힙 쓰러스트','힙쓰러스트',
+    '카프레이즈','카프 레이즈','힙 어브덕터','힙어브덕터','이너타이','레그레이즈',
+    'RDL','rdl','데드리프트',
+  ],
+  'Biceps':  [
+    '바벨컬','바벨 컬','덤벨 컬','덤벨컬','해머컬','해머 컬',
+    '인클라인 덤벨컬','인클라인 덤벨 컬','케이블컬','케이블 컬',
+    '프리처컬','프리쳐컬','프리처 컬','이지바 컬','이지바컬',
+    '페이지안 케이블 컬','베이지안 케이블 컬','컨센트레이션 컬','리버스 컬',
+  ],
+  'Triceps': [
+    '트라이셉스 푸시다운','케이블 푸쉬 다운','케이블 푸시다운','케이블 푸쉬다운',
+    '오버헤드 익스텐션','오버헤드 트라이셉스','스컬크러셔','스컬 크러셔',
+    'Close-grip 벤치','클로즈그립','클로즈 그립','다이아몬드 푸시업',
+    '딥스','라잉 트라이셉스','케이블 오버헤드 익스텐션',
+  ],
 };
 
 const ALL_EXERCISES = Object.values(EXERCISES_DB).flat();
@@ -2164,14 +2196,14 @@ function renderQuickChips() {
 function addExercise(name = '') {
   exerciseCounter++;
   const id = exerciseCounter;
-  currentExercises.push({ id, name, category: getCategory(name), focus: '', sets: [{ weight: '', reps: '' }] });
+  currentExercises.push({ id, name, category: name ? getCategory(name) : '', focus: '', sets: [{ weight: '', reps: '' }] });
   renderExerciseList();
 }
 
 function addExerciseNamed(name) {
   exerciseCounter++;
   const id = exerciseCounter;
-  currentExercises.push({ id, name, category: getCategory(name), focus: '', sets: [{ weight: '', reps: '' }, { weight: '', reps: '' }, { weight: '', reps: '' }] });
+  currentExercises.push({ id, name, category: name ? getCategory(name) : '', focus: '', sets: [{ weight: '', reps: '' }, { weight: '', reps: '' }, { weight: '', reps: '' }] });
   renderExerciseList();
   setTimeout(() => {
     const cards = document.querySelectorAll('.exercise-card');
@@ -2181,7 +2213,12 @@ function addExerciseNamed(name) {
 
 // ==================== 사용자 정의 카테고리 기억 ====================
 function getUserCategories() {
-  return JSON.parse(localStorage.getItem('fitcore_user_cats') || '{}');
+  const raw = JSON.parse(localStorage.getItem('fitcore_user_cats') || '{}');
+  // 저장된 한글 카테고리를 영문으로 변환
+  Object.keys(raw).forEach(k => {
+    if (MUSCLE_KO_TO_EN[raw[k]]) raw[k] = MUSCLE_KO_TO_EN[raw[k]];
+  });
+  return raw;
 }
 
 function saveUserCategory(name, category) {
@@ -2192,35 +2229,48 @@ function saveUserCategory(name, category) {
 }
 
 function getCategory(name) {
-  if (!name || !name.trim()) return '기타';
+  if (!name || !name.trim()) return '';
+  const trimmed = name.trim();
 
   // 1순위: 사용자가 직접 지정한 카테고리
   const userCats = getUserCategories();
-  if (userCats[name.trim()]) return userCats[name.trim()];
-
-  // 2순위: 기본 DB에서 자동 감지
-  for (const [cat, exs] of Object.entries(EXERCISES_DB)) {
-    if (exs.includes(name)) return cat;
+  if (userCats[trimmed]) {
+    const v = userCats[trimmed];
+    return MUSCLE_KO_TO_EN[v] || v; // 한글이면 영문으로 변환
   }
 
-  // 3순위: 과거 세션에서 이 종목의 카테고리 찾기
+  // 2순위: DB 완전 일치
+  for (const [cat, exs] of Object.entries(EXERCISES_DB)) {
+    if (exs.includes(trimmed)) return cat;
+  }
+
+  // 3순위: DB 부분 문자열 매칭 (사용자가 축약해서 입력한 경우)
+  const lower = trimmed.toLowerCase();
+  for (const [cat, exs] of Object.entries(EXERCISES_DB)) {
+    if (exs.some(e => lower.includes(e.toLowerCase()) || e.toLowerCase().includes(lower))) {
+      return cat;
+    }
+  }
+
+  // 4순위: 과거 세션에서 탐색 (영문 변환 포함)
   for (const s of sessions) {
-    for (const ex of s.exercises) {
-      if (ex.name === name.trim() && ex.category && ex.category !== '기타') {
-        // 발견하면 저장해두고 반환
-        saveUserCategory(name.trim(), ex.category);
-        return ex.category;
+    for (const ex of (s.exercises || [])) {
+      if (ex.name === trimmed && ex.category && ex.category !== '기타' && ex.category !== 'Other') {
+        const engCat = MUSCLE_KO_TO_EN[ex.category] || ex.category;
+        saveUserCategory(trimmed, engCat);
+        return engCat;
       }
     }
   }
 
-  return '기타';
+  return '';
 }
 
 function updateExerciseName(exIdx, val) {
   currentExercises[exIdx].name = val;
   const autoCat = getCategory(val);
-  if (!currentExercises[exIdx].category || currentExercises[exIdx].category === '기타') {
+  if (!currentExercises[exIdx].category ||
+      currentExercises[exIdx].category === '기타') {
     currentExercises[exIdx].category = autoCat;
     const cards = document.querySelectorAll('.exercise-card');
     const select = cards[exIdx]?.querySelector('.category-select');
@@ -2345,7 +2395,7 @@ function renderExerciseList() {
           oninput="updateExerciseName(${exIdx}, this.value)"
           onblur="saveDraft()">
         <select class="category-select" onchange="updateCategory(${exIdx}, this.value)">
-          ${['Chest','Back','Shoulder','Legs','Biceps','Triceps','Other'].map(cat =>
+          ${['Chest','Back','Shoulder','Legs','Biceps','Triceps'].map(cat =>
             `<option value="${cat}" ${(ex.category||getCategory(ex.name))===cat?'selected':''}>${cat}</option>`
           ).join('')}
         </select>
@@ -3534,7 +3584,7 @@ function openEditModal(sessionId) {
 
 function renderEditModal() {
   const s = editSession;
-  const cats = ['Chest','Back','Shoulder','Legs','Biceps','Triceps','Other'];
+  const cats = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
   const dayTypes = Object.entries(DAY_TYPE_INFO).map(([k,v]) =>
     `<option value="${k}" ${s.dayType===k?'selected':''}>${v.icon} ${v.label}</option>`
   ).join('');
