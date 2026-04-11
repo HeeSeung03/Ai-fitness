@@ -2142,42 +2142,58 @@ const ALL_EXERCISES = Object.values(EXERCISES_DB).flat();
 // ==================== 기존 세션 마이그레이션 ====================
 function migrateSessionsToMuscles() {
   const DAYTYPE_TO_MUSCLES = {
-    push: ['Chest', 'Shoulder', 'Triceps'],
-    pull: ['Back', 'Biceps'],
-    legs: ['Legs'],
+    push:    ['Chest', 'Shoulder', 'Triceps'],
+    pull:    ['Back', 'Biceps'],
+    legs:    ['Legs'],
+    workout: [],
+    free:    [],
+    running: [],
   };
+  const ALL_MUSCLES = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
   let changed = false;
+
   sessions.forEach(s => {
-    // 1. muscles[] 없는 세션에 추가
-    if (!s.muscles) {
-      // dayType 기반 초기값
-      const base = DAYTYPE_TO_MUSCLES[s.dayType] || [];
-      // 종목 카테고리로 정밀 감지
-      const fromCats = [...new Set(
-        (s.exercises||[]).map(ex => {
-          const cat = ex.category || '';
-          return MUSCLE_KO_TO_EN[cat] || cat;
-        }).filter(m => m && m !== 'Other' && m !== '기타')
-      )];
-      s.muscles = fromCats.length ? fromCats : base;
+    // 1. 카테고리 한글 → 영문 변환 (먼저 처리)
+    (s.exercises||[]).forEach(ex => {
+      const eng = MUSCLE_KO_TO_EN[ex.category||''];
+      if (eng) { ex.category = eng; changed = true; }
+    });
+
+    // 2. muscles[] 생성 or 보완
+    // 종목 카테고리에서 정밀 감지
+    const fromCats = [...new Set(
+      (s.exercises||[]).map(ex => {
+        // 카테고리가 있으면 사용, 없으면 종목명으로 추론
+        const cat = ex.category || '';
+        const eng = MUSCLE_KO_TO_EN[cat] || cat;
+        if (ALL_MUSCLES.includes(eng)) return eng;
+        // 카테고리 없으면 종목명으로 getCategory 시도
+        const inferred = getCategory(ex.name);
+        return ALL_MUSCLES.includes(inferred) ? inferred : null;
+      }).filter(Boolean)
+    )];
+
+    const base = DAYTYPE_TO_MUSCLES[s.dayType] || [];
+    const muscles = fromCats.length ? fromCats : base;
+
+    // 빈 배열 포함 — muscles 없거나 비어있거나 유효하지 않으면 재생성
+    const needsUpdate = !s.muscles || s.muscles.length === 0 ||
+      !s.muscles.some(m => ALL_MUSCLES.includes(m));
+    if (needsUpdate && muscles.length > 0) {
+      s.muscles = muscles;
       changed = true;
     }
-    // 2. 카테고리 한글 → 영문 변환
-    (s.exercises||[]).forEach(ex => {
-      if (ex.category && MUSCLE_KO_TO_EN[ex.category]) {
-        ex.category = MUSCLE_KO_TO_EN[ex.category];
-        changed = true;
-      }
-    });
-    // 3. push/pull/legs dayType → workout으로 변환
+
+    // 3. push/pull/legs → workout
     if (['push','pull','legs'].includes(s.dayType)) {
       s.dayType = 'workout';
       changed = true;
     }
   });
+
   if (changed) {
     localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
-    console.log('✅ 세션 마이그레이션 완료');
+    console.log(`✅ 세션 마이그레이션 완료 — ${sessions.length}개 세션 처리`);
   }
 }
 
@@ -2196,7 +2212,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (migrated) localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
 
-  migrateSessionsToMuscles();
+  migrateSessionsToMuscles(); // 기존 세션 muscles[] 생성
   buildMetricsTabBar();
   setToday();
   renderQuickChips();
@@ -2723,13 +2739,15 @@ function saveSession() {
     return;
   }
 
-  // 부위 자동 감지
+  // 부위 자동 감지 (영문 카테고리 기준)
+  const ALL_MUSCLES_SAVE = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
   const detectedMuscles = [...new Set(
     validExercises.map(ex => {
       const cat = ex.category && ex.category !== '기타' && ex.category !== 'Other'
         ? ex.category : getCategory(ex.name);
-      return MUSCLE_KO_TO_EN[cat] || cat;
-    }).filter(m => m && m !== 'Other')
+      const eng = MUSCLE_KO_TO_EN[cat] || cat;
+      return ALL_MUSCLES_SAVE.includes(eng) ? eng : null;
+    }).filter(Boolean)
   )];
 
   const session = {
@@ -4906,12 +4924,19 @@ function calcAnalValue(session, metricId) {
 
 function getMuscleSessions(muscle) {
   return sessions.filter(s => {
-    if (['running','free'].includes(s.dayType)) return false;
+    if (s.dayType === 'running') return false;
+    // muscles[] 있으면 우선 사용
     if (s.muscles?.length) return s.muscles.includes(muscle);
-    return (s.exercises||[]).some(ex =>
-      (MUSCLE_KO_TO_EN[ex.category||''] || ex.category) === muscle
-    );
-  }).slice(0, 12).reverse(); // 오래된순 → 최신순
+    // 없으면 종목 카테고리로 판단
+    return (s.exercises||[]).some(ex => {
+      const cat = ex.category || '';
+      const eng = MUSCLE_KO_TO_EN[cat] || cat;
+      if (eng === muscle) return true;
+      // 카테고리 없으면 종목명으로 추론
+      if (!cat) return getCategory(ex.name) === muscle;
+      return false;
+    });
+  }).slice(0, 12).reverse(); // 오래된→최신
 }
 
 function renderAnalMetricCards() {
