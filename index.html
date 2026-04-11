@@ -1324,6 +1324,52 @@
   .focus-badge.hypertrophy{ color: #c8f542; }
   .focus-badge.none       { color: var(--text3); }
 
+  /* 분석 지표 패널 카드 */
+  .anal-metric-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    margin-bottom: 16px;
+  }
+  .anal-metric-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px; cursor: pointer;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .anal-metric-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--amc-color, var(--border));
+    transition: width 0.2s;
+  }
+  .anal-metric-card.selected {
+    border-color: var(--amc-color);
+    background: color-mix(in srgb, var(--amc-color) 8%, var(--surface));
+  }
+  .anal-metric-card.selected::before { width: 4px; }
+  .anal-metric-card:hover:not(.selected) { border-color: var(--text3); }
+  .amc-icon { font-size: 16px; margin-bottom: 5px; }
+  .amc-name { font-size: 10px; color: var(--text3); letter-spacing: 0.4px; margin-bottom: 5px; }
+  .amc-value {
+    font-family: 'Bebas Neue', sans-serif; font-size: 24px;
+    letter-spacing: 1px; line-height: 1; color: var(--amc-color);
+  }
+  .amc-unit { font-size: 11px; margin-left: 2px; }
+  .amc-change { font-size: 10px; margin-top: 4px; font-weight: 700; }
+  .amc-up { color: var(--accent); }
+  .amc-down { color: #f54242; }
+  .amc-neutral { color: var(--text3); }
+
+  /* 선 그래프 */
+  .anal-chart-wrap { position: relative; }
+  .anal-chart-wrap svg { width: 100%; display: block; overflow: visible; }
+  .anal-tooltip {
+    position: absolute; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 7px 11px; font-size: 11px; color: var(--text);
+    pointer-events: none; opacity: 0; transition: opacity 0.12s;
+    white-space: nowrap; z-index: 10; transform: translate(-50%, -120%);
+  }
+  .anal-tooltip-date { color: var(--text3); font-size: 10px; margin-bottom: 2px; }
+  .anal-tooltip-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+
   /* GOAL CARD 개선 */
   .goal-card-guide {
     font-size: 9px; color: var(--text3); line-height: 1.5;
@@ -3903,6 +3949,7 @@ function switchMetricsTab(type) {
     }
   });
   renderMetrics();
+  renderAnalMetricCards();
 }
 
 function renderMetrics() {
@@ -4818,6 +4865,297 @@ function renderMuscleTrendChart() {
     <div class="line-chart-legend">${legend}</div>`;
 }
 
+
+// ==================== 분석 지표 선 그래프 ====================
+
+// 충돌 방지: 기존 currentMetricsTab 유지, 새 변수명 사용
+let analCurrentMetric = 'vol'; // vol | lo | cal | rm
+
+const ANAL_METRICS = [
+  { id:'vol', name:'총 볼륨',          icon:'📊', color:'#c8f542', unit:'kg' },
+  { id:'lo',  name:'점진적 과부하',    icon:'🔄', color:'#42c5f5', unit:'%'  },
+  { id:'cal', name:'예상 소모 칼로리', icon:'🔥', color:'#ff9f43', unit:'kcal' },
+  { id:'rm',  name:'운동 강도 (1RM)',  icon:'⚡', color:'#f54242', unit:'kg' },
+];
+
+// 부위별 세션에서 지표값 계산
+function calcAnalValue(session, metricId) {
+  if (metricId === 'vol') {
+    return session.exercises.reduce((sum, ex) =>
+      sum + ex.sets.reduce((s2, set) =>
+        s2 + parseFloat(set.weight||0) * parseInt(set.reps||0), 0), 0);
+  }
+  if (metricId === 'cal') {
+    return estimateSessionCalories(session);
+  }
+  if (metricId === 'rm') {
+    let max = 0;
+    session.exercises.forEach(ex => {
+      ex.sets.forEach(set => {
+        const w = parseFloat(set.weight||0), r = parseInt(set.reps||0);
+        if (w > 0 && r > 0) {
+          const rm = r === 1 ? w : Math.round(w * (1 + r/30));
+          if (rm > max) max = rm;
+        }
+      });
+    });
+    return max;
+  }
+  return 0;
+}
+
+function getMuscleSessions(muscle) {
+  return sessions.filter(s => {
+    if (['running','free'].includes(s.dayType)) return false;
+    if (s.muscles?.length) return s.muscles.includes(muscle);
+    return (s.exercises||[]).some(ex =>
+      (MUSCLE_KO_TO_EN[ex.category||''] || ex.category) === muscle
+    );
+  }).slice(0, 12).reverse(); // 오래된순 → 최신순
+}
+
+function renderAnalMetricCards() {
+  const grid = document.getElementById('anal-metric-grid');
+  if (!grid) return;
+
+  const muscle = currentMetricsTab;
+  const muscleSessions = getMuscleSessions(muscle);
+
+  if (muscleSessions.length < 1) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;
+      color:var(--text3);font-size:12px;padding:20px 0;">
+      ${muscle} 세션이 없습니다. 기록을 저장하면 분석이 시작됩니다.
+    </div>`;
+    document.getElementById('anal-chart-panel').innerHTML = '';
+    return;
+  }
+
+  const last = muscleSessions[muscleSessions.length - 1];
+  const prev = muscleSessions.length >= 2 ? muscleSessions[muscleSessions.length - 2] : null;
+
+  grid.innerHTML = ANAL_METRICS.map(m => {
+    const val = calcAnalValue(last, m.id);
+    const prevVal = prev ? calcAnalValue(prev, m.id) : null;
+
+    let displayVal, changeHtml;
+
+    if (m.id === 'lo') {
+      // 점진적 과부하: 볼륨 변화율
+      if (prevVal && prevVal > 0) {
+        const curVol = calcAnalValue(last, 'vol');
+        const pVol = calcAnalValue(prev, 'vol');
+        const pct = ((curVol - pVol) / pVol * 100);
+        displayVal = (pct >= 0 ? '+' : '') + pct.toFixed(1);
+        const cls = pct >= 0 ? 'amc-up' : 'amc-down';
+        changeHtml = `<div class="amc-change ${cls}">직전 세션 대비</div>`;
+      } else {
+        displayVal = '—';
+        changeHtml = `<div class="amc-change amc-neutral">데이터 부족</div>`;
+      }
+    } else {
+      displayVal = m.id === 'vol' || m.id === 'cal'
+        ? Math.round(val).toLocaleString()
+        : Math.round(val).toString();
+
+      if (prev && prevVal) {
+        const diff = val - prevVal;
+        const pct = ((diff / prevVal) * 100).toFixed(1);
+        const sign = diff >= 0 ? '+' : '';
+        const cls = diff >= 0 ? 'amc-up' : 'amc-down';
+        changeHtml = `<div class="amc-change ${cls}">${sign}${pct}% 직전 대비</div>`;
+      } else {
+        changeHtml = `<div class="amc-change amc-neutral">첫 번째 세션</div>`;
+      }
+    }
+
+    const isSelected = m.id === analCurrentMetric;
+    return `
+      <div class="anal-metric-card ${isSelected ? 'selected' : ''}"
+        style="--amc-color:${m.color}"
+        onclick="selectAnalMetric('${m.id}')">
+        <div class="amc-icon">${m.icon}</div>
+        <div class="amc-name">${m.name}</div>
+        <div class="amc-value">${displayVal}<span class="amc-unit">${m.unit}</span></div>
+        ${changeHtml}
+      </div>`;
+  }).join('');
+
+  renderAnalChart(muscle, muscleSessions);
+}
+
+function selectAnalMetric(id) {
+  analCurrentMetric = id;
+  renderAnalMetricCards();
+}
+
+function renderAnalChart(muscle, muscleSessions) {
+  const panel = document.getElementById('anal-chart-panel');
+  if (!panel) return;
+
+  const metric = ANAL_METRICS.find(m => m.id === analCurrentMetric);
+  const mCol = metric.color;
+
+  if (muscleSessions.length < 2) {
+    panel.innerHTML = `<div style="text-align:center;color:var(--text3);
+      font-size:12px;padding:16px 0;">
+      ${muscle} 세션 2개 이상 저장하면 그래프가 표시됩니다
+    </div>`;
+    return;
+  }
+
+  // 데이터 계산
+  const dataPoints = muscleSessions.map((s, i) => {
+    let val;
+    if (metric.id === 'lo') {
+      if (i === 0) return { date: s.date.slice(5).replace('-','/'), val: null };
+      const cur = calcAnalValue(s, 'vol');
+      const prv = calcAnalValue(muscleSessions[i-1], 'vol');
+      val = prv > 0 ? parseFloat(((cur - prv) / prv * 100).toFixed(2)) : 0;
+    } else {
+      val = calcAnalValue(s, metric.id);
+    }
+    return { date: s.date.slice(5).replace('-','/'), val };
+  });
+
+  const validPts = dataPoints.filter(d => d.val !== null);
+  if (validPts.length < 2) {
+    panel.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:12px;padding:12px 0;">그래프 데이터 부족</div>`;
+    return;
+  }
+
+  const vals = validPts.map(d => d.val);
+  const first = vals[0], last = vals[vals.length-1];
+  const totalChange = metric.id === 'lo'
+    ? (last-first >= 0 ? '+' : '') + (last-first).toFixed(1) + '%p'
+    : (last-first >= 0 ? '+' : '') + Math.round(last-first).toLocaleString() + metric.unit;
+  const trendCol = last >= first ? 'var(--accent)' : '#f54242';
+
+  // SVG
+  const W = 600, H = 180;
+  const PAD = { top: 28, right: 20, bottom: 34, left: 52 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+  const minV = Math.min(...vals), maxV = Math.max(...vals);
+  const pad = (maxV - minV) * 0.18 || Math.abs(maxV * 0.1) || 5;
+  const domMin = minV - pad, domMax = maxV + pad;
+  const range = domMax - domMin || 1;
+  const n = validPts.length;
+
+  const toX = i => PAD.left + i * (cW / Math.max(n-1, 1));
+  const toY = v => PAD.top + cH - ((v - domMin) / range) * cH;
+
+  // Y 눈금
+  const yTicks = Array.from({length:5}, (_,i) => domMin + range/4*i);
+  const yGrid = yTicks.map(v => {
+    const y = toY(v);
+    const lbl = metric.id === 'lo'
+      ? (v>=0?'+':'')+v.toFixed(1)+'%'
+      : metric.id === 'vol' || metric.id === 'cal'
+      ? Math.round(v).toLocaleString()
+      : Math.round(v)+'kg';
+    return `<line x1="${PAD.left}" y1="${y}" x2="${W-PAD.right}" y2="${y}"
+        stroke="#2a2a3a" stroke-width="1"/>
+      <text x="${PAD.left-6}" y="${y+4}" text-anchor="end"
+        font-size="9" fill="#555568">${lbl}</text>`;
+  }).join('');
+
+  // 0선 (lo)
+  const zeroLine = metric.id === 'lo' && domMin < 0 && domMax > 0
+    ? `<line x1="${PAD.left}" y1="${toY(0)}" x2="${W-PAD.right}" y2="${toY(0)}"
+        stroke="#555568" stroke-width="1" stroke-dasharray="4,3"/>` : '';
+
+  // X 레이블
+  const xLabels = validPts.map((d, i) => {
+    if (n > 6 && i % 2 !== 0 && i !== n-1) return '';
+    return `<text x="${toX(i)}" y="${H-6}" text-anchor="middle"
+      font-size="9" fill="#555568">${d.date}</text>`;
+  }).join('');
+
+  // 그라데이션
+  const gid = 'ag' + Date.now();
+  const areaPts = [
+    `${toX(0)},${PAD.top+cH}`,
+    ...validPts.map((d,i) => `${toX(i)},${toY(d.val)}`),
+    `${toX(n-1)},${PAD.top+cH}`
+  ].join(' ');
+  const linePts = validPts.map((d,i) => `${toX(i)},${toY(d.val)}`).join(' ');
+
+  // 점
+  const dots = validPts.map((d, i) => {
+    const isLast = i === n-1;
+    const lbl = metric.id === 'lo'
+      ? (d.val>=0?'+':'')+d.val.toFixed(1)+'%'
+      : metric.id === 'vol' || metric.id === 'cal'
+      ? Math.round(d.val).toLocaleString()+metric.unit
+      : Math.round(d.val)+metric.unit;
+    return `
+      <circle cx="${toX(i)}" cy="${toY(d.val)}" r="${isLast?7:4}"
+        fill="${isLast?mCol:'var(--bg)'}" stroke="${mCol}" stroke-width="2"
+        class="anal-dot"
+        data-date="${d.date}" data-val="${lbl}"
+        data-cx="${toX(i)}" data-cy="${toY(d.val)}"
+        style="cursor:pointer;${isLast?`filter:drop-shadow(0 0 5px ${mCol}66)`:''}"/>
+      ${isLast ? `<text x="${toX(i)}" y="${toY(d.val)-13}" text-anchor="middle"
+        font-size="11" fill="${mCol}" font-weight="700">${lbl}</text>` : ''}`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:10px;margin-top:4px;">
+      <span style="font-size:12px;color:var(--text2);font-weight:700;">
+        ${metric.icon} ${muscle} — ${metric.name}
+      </span>
+      <span style="font-size:11px;font-weight:700;color:${trendCol};
+        padding:2px 10px;border-radius:12px;
+        border:1px solid ${trendCol};background:${trendCol}18;">
+        ${totalChange}
+      </span>
+    </div>
+    <div class="anal-chart-wrap">
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${mCol}" stop-opacity="0.16"/>
+            <stop offset="100%" stop-color="${mCol}" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        ${yGrid}
+        ${zeroLine}
+        ${xLabels}
+        <polygon points="${areaPts}" fill="url(#${gid})"/>
+        <polyline points="${linePts}" fill="none" stroke="${mCol}"
+          stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        ${dots}
+      </svg>
+      <div class="anal-tooltip" id="anal-ttip">
+        <div class="anal-tooltip-date" id="anal-ttip-date"></div>
+        <div class="anal-tooltip-val" id="anal-ttip-val" style="color:${mCol}"></div>
+      </div>
+    </div>`;
+
+  // 툴팁
+  panel.querySelectorAll('.anal-dot').forEach(dot => {
+    dot.addEventListener('mouseenter', () => {
+      const tip = document.getElementById('anal-ttip');
+      const dDate = document.getElementById('anal-ttip-date');
+      const dVal  = document.getElementById('anal-ttip-val');
+      if (!tip || !dDate || !dVal) return;
+      dDate.textContent = dot.dataset.date;
+      dVal.textContent  = dot.dataset.val;
+      const svgEl = dot.closest('svg');
+      const rect = svgEl.getBoundingClientRect();
+      const ratio = rect.width / W;
+      tip.style.left = (parseFloat(dot.dataset.cx) * ratio) + 'px';
+      tip.style.top  = (parseFloat(dot.dataset.cy) * ratio) + 'px';
+      tip.style.opacity = '1';
+    });
+    dot.addEventListener('mouseleave', () => {
+      const tip = document.getElementById('anal-ttip');
+      if (tip) tip.style.opacity = '0';
+    });
+  });
+}
+
 // ==================== 규칙 기반 피드백 (근력·근비대 + 볼륨·1RM 비교) ====================
 
 const FOCUS_RULES = {
@@ -5161,7 +5499,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-btn')[tabMap[tab]].classList.add('active');
 
   if (tab === 'history') { renderHistory(); }
-  if (tab === 'feedback') { renderMetrics(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); renderMuscleVolumePanel(); renderMuscleTrendChart(); }
+  if (tab === 'feedback') { renderMetrics(); renderAnalMetricCards(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); renderMuscleVolumePanel(); renderMuscleTrendChart(); }
 }
 
 function openCurrentGuide() {
