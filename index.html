@@ -3368,15 +3368,31 @@ function renderHistory() {
           <div class="history-date">📅 ${dateStr}</div>
           ${badge}
         </div>
-        <div class="history-exercises">${(s.exercises||[]).map(e => {
-          const badge = e.focus === 'strength' ? '<span style="font-size:10px;color:#f5a742;font-weight:700;margin-left:3px;">💪 근력</span>'
-                      : e.focus === 'hypertrophy' ? '<span style="font-size:10px;color:#c8f542;font-weight:700;margin-left:3px;">🔥 근비대</span>' : '';
-          return e.name + badge;
-        }).join(' · ')}</div>
+        <div class="history-exercises">${(() => {
+          const MUSCLE_CATS = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+          // 필터가 근육군이면 해당 카테고리 종목만 표시
+          const exList = (s.exercises||[]).filter(e => {
+            if (!MUSCLE_CATS.includes(historyFilter)) return true; // 전체/러닝
+            const cat = MUSCLE_KO_TO_EN[e.category||''] || e.category || '';
+            return cat === historyFilter;
+          });
+          if (!exList.length) return '<span style="color:var(--text3);font-size:11px;">—</span>';
+          return exList.map(e => {
+            const badge = e.focus === 'strength'
+              ? '<span style="font-size:10px;color:#f5a742;font-weight:700;margin-left:3px;">💪 근력</span>'
+              : e.focus === 'hypertrophy'
+              ? '<span style="font-size:10px;color:#c8f542;font-weight:700;margin-left:3px;">🔥 근비대</span>' : '';
+            return e.name + badge;
+          }).join(' · ');
+        })()}</div>
         <div class="history-stats">
           <div class="stat-item">
-            <div class="stat-val">${(s.exercises||[]).length}</div>
-            <div class="stat-label">운동 종목</div>
+            <div class="stat-val">${(() => {
+              const MUSCLE_CATS = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+              if (!MUSCLE_CATS.includes(historyFilter)) return (s.exercises||[]).length;
+              return (s.exercises||[]).filter(e => (MUSCLE_KO_TO_EN[e.category||'']||e.category) === historyFilter).length;
+            })()}</div>
+            <div class="stat-label">${['Chest','Back','Shoulder','Legs','Biceps','Triceps'].includes(historyFilter) ? historyFilter : '운동'} 종목</div>
           </div>
           <div class="stat-item">
             <div class="stat-val">${totalSets}</div>
@@ -4163,7 +4179,7 @@ function renderBalancePanel() {
     else if (pushPull < 0.67) balanceTip = '⚠️ Pull 비중이 높습니다. Push 세션과 균형을 맞춰보세요.';
     else balanceTip = '✅ Push / Pull 밸런스가 양호합니다.';
   }
-  if (!counts.legs) balanceTip += (balanceTip ? ' ' : '') + '💡 하체(Legs) 세션이 없습니다.';
+  if (!counts['Legs']) balanceTip += (balanceTip ? ' ' : '') + '💡 Legs 세션이 없습니다.';
 
   const rows = types.map(t => {
     const pct = maxCount ? (counts[t] / maxCount * 100) : 0;
@@ -4596,12 +4612,12 @@ function showManualCompareModal(prevSession, newSession) {
 
 // 근비대 기준 주간 권장 세트 수 (Schoenfeld et al. 기반)
 const MUSCLE_VOLUME_GOALS = {
-  '가슴':   { min: 10, max: 20, color: '#ff6b6b', icon: '💥' },
-  '등':     { min: 10, max: 20, color: '#6b9fff', icon: '🔗' },
-  '어깨':   { min: 6,  max: 16, color: '#c8a0ff', icon: '💪' },
-  '하체':   { min: 10, max: 20, color: '#a06bff', icon: '🦵' },
-  '이두':   { min: 6,  max: 14, color: '#42c5f5', icon: '💪' },
-  '삼두':   { min: 6,  max: 14, color: '#f5a742', icon: '💪' },
+  'Chest':    { min: 10, max: 20, color: '#ff6b6b', icon: '💪' },
+  'Back':     { min: 10, max: 20, color: '#6b9fff', icon: '🔗' },
+  'Shoulder': { min: 6,  max: 16, color: '#c8a0ff', icon: '💪' },
+  'Legs':     { min: 10, max: 20, color: '#a06bff', icon: '🦵' },
+  'Biceps':   { min: 6,  max: 14, color: '#42c5f5', icon: '💪' },
+  'Triceps':  { min: 6,  max: 14, color: '#f5a742', icon: '💪' },
 };
 
 function getWeekSessions(weeksAgo = 0) {
@@ -5239,374 +5255,374 @@ function showToast(msg) {
 function injectKakaoSessions() {
   const KAKAO_SESSIONS = [
     {
-      date: '2026-02-28', dayType: 'legs',
+      date: '2026-02-28', dayType: 'workout',
       exercises: [
-        { name: '루마니안 데드', category: '하체', sets: [
+        { name: '루마니안 데드', category: 'Legs', sets: [
           {weight:'60',reps:'10'},{weight:'60',reps:'12'},{weight:'80',reps:'6'},
           {weight:'80',reps:'4'},{weight:'90',reps:'3'}
         ]},
-        { name: 'V 스쿼트', category: '하체', sets: [
+        { name: 'V 스쿼트', category: 'Legs', sets: [
           {weight:'40',reps:'10'},{weight:'60',reps:'11'},{weight:'80',reps:'10'},{weight:'90',reps:'8'}
         ]},
-        { name: '레그 컬', category: '하체', sets: [
+        { name: '레그 컬', category: 'Legs', sets: [
           {weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'}
         ]},
-        { name: '힙 어브덕터', category: '하체', sets: [
+        { name: '힙 어브덕터', category: 'Legs', sets: [
           {weight:'55',reps:'12'},{weight:'55',reps:'12'},{weight:'45',reps:'12'},{weight:'45',reps:'12'}
         ]},
-        { name: '런지 & 불가리안 스쿼트', category: '하체', sets: [
+        { name: '런지 & 불가리안 스쿼트', category: 'Legs', sets: [
           {weight:'8',reps:'10'},{weight:'8',reps:'10'},{weight:'0',reps:'12'},{weight:'0',reps:'12'}
         ]},
       ]
     },
     {
-      date: '2026-03-02', dayType: 'push',
+      date: '2026-03-02', dayType: 'workout',
       exercises: [
-        { name: '벤치 프레스', category: '가슴', sets: [
+        { name: '벤치 프레스', category: 'Chest', sets: [
           {weight:'60',reps:'10'},{weight:'60',reps:'10'},{weight:'70',reps:'10'},{weight:'70',reps:'8'}
         ]},
-        { name: '인클라인 덤벨 프레스', category: '가슴', sets: [
+        { name: '인클라인 덤벨 프레스', category: 'Chest', sets: [
           {weight:'20',reps:'12'},{weight:'20',reps:'12'},{weight:'24',reps:'8'},{weight:'24',reps:'6'},{weight:'18',reps:'10'}
         ]},
-        { name: '중량 딥스', category: '가슴', sets: [
+        { name: '중량 딥스', category: 'Chest', sets: [
           {weight:'10',reps:'10'},{weight:'10',reps:'10'}
         ]},
-        { name: '펙 덱 플라이', category: '가슴', sets: [
+        { name: '펙 덱 플라이', category: 'Chest', sets: [
           {weight:'40',reps:'10'},{weight:'40',reps:'10'},{weight:'25',reps:'12'},{weight:'25',reps:'12'},{weight:'15',reps:'12'}
         ]},
-        { name: '페이지안 케이블 컬', category: '이두', sets: [
+        { name: '페이지안 케이블 컬', category: 'Biceps', sets: [
           {weight:'25',reps:'12'},{weight:'25',reps:'12'},{weight:'25',reps:'10'}
         ]},
-        { name: '해머컬', category: '이두', sets: [
+        { name: '해머컬', category: 'Biceps', sets: [
           {weight:'10',reps:'12'},{weight:'10',reps:'12'},{weight:'12',reps:'10'}
         ]},
       ]
     },
     {
-      date: '2026-03-03', dayType: 'pull',
+      date: '2026-03-03', dayType: 'workout',
       exercises: [
-        { name: '랙 풀', category: '등', sets: [
+        { name: '랙 풀', category: 'Back', sets: [
           {weight:'80',reps:'10'},{weight:'100',reps:'5'},{weight:'100',reps:'5'},{weight:'80',reps:'12'}
         ]},
-        { name: '중량 풀업', category: '등', sets: [
+        { name: '중량 풀업', category: 'Back', sets: [
           {weight:'10',reps:'8'},{weight:'10',reps:'6'}
         ]},
-        { name: '케이블 시티드 로우', category: '등', sets: [
+        { name: '케이블 시티드 로우', category: 'Back', sets: [
           {weight:'32',reps:'12'},{weight:'32',reps:'12'},{weight:'32',reps:'10'},{weight:'32',reps:'10'}
         ]},
-        { name: '스트레이트 암 풀 다운', category: '등', sets: [
+        { name: '스트레이트 암 풀 다운', category: 'Back', sets: [
           {weight:'25',reps:'12'},{weight:'25',reps:'12'},{weight:'25',reps:'13'},{weight:'25',reps:'11'}
         ]},
-        { name: '트라이셉스 익스텐션', category: '삼두', sets: [
+        { name: '트라이셉스 익스텐션', category: 'Triceps', sets: [
           {weight:'25',reps:'12'},{weight:'25',reps:'12'}
         ]},
-        { name: '케이블 킥 백', category: '삼두', sets: [
+        { name: '케이블 킥 백', category: 'Triceps', sets: [
           {weight:'17.5',reps:'10'},{weight:'17.5',reps:'10'},{weight:'13.5',reps:'11'},{weight:'13.5',reps:'11'}
         ]},
       ]
     },
     {
-      date: '2026-03-04', dayType: 'legs',
+      date: '2026-03-04', dayType: 'workout',
       exercises: [
-        { name: '스쿼트', category: '하체', sets: [
+        { name: '스쿼트', category: 'Legs', sets: [
           {weight:'80',reps:'10'},{weight:'90',reps:'6'},{weight:'90',reps:'5'}
         ]},
-        { name: '레그 프레스', category: '하체', sets: [
+        { name: '레그 프레스', category: 'Legs', sets: [
           {weight:'117',reps:'12'},{weight:'102',reps:'12'}
         ]},
-        { name: '힙 어브덕터', category: '하체', sets: [
+        { name: '힙 어브덕터', category: 'Legs', sets: [
           {weight:'20',reps:'14'},{weight:'20',reps:'14'},{weight:'20',reps:'13'}
         ]},
-        { name: '레그 익스텐션', category: '하체', sets: [
+        { name: '레그 익스텐션', category: 'Legs', sets: [
           {weight:'65',reps:'12'},{weight:'70',reps:'12'},{weight:'75',reps:'12'}
         ]},
-        { name: '불가리안 스플릿 스쿼트', category: '하체', sets: [
+        { name: '불가리안 스플릿 스쿼트', category: 'Legs', sets: [
           {weight:'8',reps:'12'},{weight:'8',reps:'12'},{weight:'8',reps:'11'}
         ]},
       ]
     },
     {
-      date: '2026-03-06', dayType: 'push',
+      date: '2026-03-06', dayType: 'workout',
       exercises: [
-        { name: '인클라인 벤치 프레스', category: '가슴', sets: [
+        { name: '인클라인 벤치 프레스', category: 'Chest', sets: [
           {weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'50',reps:'12'},{weight:'50',reps:'10'}
         ]},
-        { name: '체스트 프레스 머신', category: '가슴', sets: [
+        { name: '체스트 프레스 머신', category: 'Chest', sets: [
           {weight:'50',reps:'12'},{weight:'50',reps:'12'},{weight:'60',reps:'11'},{weight:'60',reps:'10'}
         ]},
-        { name: '케이블 플라이', category: '가슴', sets: [
+        { name: '케이블 플라이', category: 'Chest', sets: [
           {weight:'17.5',reps:'14'},{weight:'17.5',reps:'14'},{weight:'21',reps:'14'},{weight:'21',reps:'12'},{weight:'25',reps:'12'}
         ]},
-        { name: '펙 덱 플라이', category: '가슴', sets: [
+        { name: '펙 덱 플라이', category: 'Chest', sets: [
           {weight:'20',reps:'12'},{weight:'20',reps:'12'},{weight:'30',reps:'12'},{weight:'30',reps:'12'}
         ]},
-        { name: '숄더 프레스', category: '어깨', sets: [
+        { name: '숄더 프레스', category: 'Shoulder', sets: [
           {weight:'40',reps:'12'},{weight:'50',reps:'11'},{weight:'50',reps:'11'},{weight:'40',reps:'8'}
         ]},
-        { name: '업라이트 로우', category: '어깨', sets: [
+        { name: '업라이트 로우', category: 'Shoulder', sets: [
           {weight:'10',reps:'12'},{weight:'10',reps:'12'},{weight:'13.5',reps:'12'},{weight:'13.5',reps:'12'}
         ]},
-        { name: '리버스 케이블 크로스 오버', category: '어깨', sets: [
+        { name: '리버스 케이블 크로스 오버', category: 'Shoulder', sets: [
           {weight:'10',reps:'13'},{weight:'10',reps:'13'},{weight:'10',reps:'12'},{weight:'10',reps:'10'}
         ]},
       ]
     },
     {
-      date: '2026-03-07', dayType: 'pull',
+      date: '2026-03-07', dayType: 'workout',
       exercises: [
-        { name: '바벨 로우', category: '등', sets: [
+        { name: '바벨 로우', category: 'Back', sets: [
           {weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'50',reps:'12'},{weight:'50',reps:'12'},{weight:'60',reps:'10'}
         ]},
-        { name: '원 암 시티드 로우', category: '등', sets: [
+        { name: '원 암 시티드 로우', category: 'Back', sets: [
           {weight:'25',reps:'12'},{weight:'30',reps:'12'},{weight:'35',reps:'11'},{weight:'25',reps:'10'}
         ]},
-        { name: '원 암 프론트 로우', category: '등', sets: [
+        { name: '원 암 프론트 로우', category: 'Back', sets: [
           {weight:'20',reps:'10'},{weight:'20',reps:'10'},{weight:'20',reps:'10'},{weight:'10',reps:'12'},{weight:'10',reps:'12'}
         ]},
-        { name: '클로즈 그립 렛 풀 다운', category: '등', sets: [
+        { name: '클로즈 그립 렛 풀 다운', category: 'Back', sets: [
           {weight:'32',reps:'12'},{weight:'32',reps:'12'},{weight:'32',reps:'12'}
         ]},
-        { name: '이지바 컬', category: '이두', sets: [
+        { name: '이지바 컬', category: 'Biceps', sets: [
           {weight:'20',reps:'10'},{weight:'20',reps:'9'},{weight:'15',reps:'10'},{weight:'15',reps:'9'}
         ]},
-        { name: '케이블 익스텐션', category: '삼두', sets: [
+        { name: '케이블 익스텐션', category: 'Triceps', sets: [
           {weight:'40',reps:'12'},{weight:'47.5',reps:'10'}
         ]},
-        { name: '해머 컬', category: '이두', sets: [
+        { name: '해머 컬', category: 'Biceps', sets: [
           {weight:'8',reps:'12'},{weight:'10',reps:'12'},{weight:'10',reps:'12'}
         ]},
       ]
     },
     {
-      date: '2026-03-08', dayType: 'legs',
+      date: '2026-03-08', dayType: 'workout',
       exercises: [
-        { name: '루마니안 데드', category: '하체', sets: [
+        { name: '루마니안 데드', category: 'Legs', sets: [
           {weight:'60',reps:'12'},{weight:'60',reps:'12'},{weight:'70',reps:'8'},{weight:'70',reps:'8'},{weight:'50',reps:'10'}
         ]},
-        { name: 'V 스쿼트', category: '하체', sets: [
+        { name: 'V 스쿼트', category: 'Legs', sets: [
           {weight:'40',reps:'10'},{weight:'40',reps:'12'},{weight:'50',reps:'10'},{weight:'60',reps:'10'},{weight:'40',reps:'12'}
         ]},
-        { name: '레그 프레스', category: '하체', sets: [
+        { name: '레그 프레스', category: 'Legs', sets: [
           {weight:'120',reps:'12'},{weight:'120',reps:'12'}
         ]},
-        { name: '레그 컬', category: '하체', sets: [
+        { name: '레그 컬', category: 'Legs', sets: [
           {weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'}
         ]},
-        { name: '힙 어브덕터', category: '하체', sets: [
+        { name: '힙 어브덕터', category: 'Legs', sets: [
           {weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'25',reps:'12'},{weight:'25',reps:'12'}
         ]},
       ]
     },
     {
-      date: '2026-03-10', dayType: 'push',
+      date: '2026-03-10', dayType: 'workout',
       exercises: [
-        { name: '벤치 프레스', category: '가슴', sets: [
+        { name: '벤치 프레스', category: 'Chest', sets: [
           {weight:'60',reps:'10'},{weight:'70',reps:'10'},{weight:'75',reps:'5'},{weight:'75',reps:'5'}
         ]},
-        { name: '인클라인 덤벨 프레스', category: '가슴', sets: [
+        { name: '인클라인 덤벨 프레스', category: 'Chest', sets: [
           {weight:'20',reps:'10'},{weight:'20',reps:'11'},{weight:'20',reps:'10'},{weight:'24',reps:'5'},{weight:'24',reps:'5'}
         ]},
-        { name: '중량 딥스', category: '가슴', sets: [
+        { name: '중량 딥스', category: 'Chest', sets: [
           {weight:'10',reps:'10'},{weight:'10',reps:'10'}
         ]},
-        { name: '펙 덱 플라이', category: '가슴', sets: [
+        { name: '펙 덱 플라이', category: 'Chest', sets: [
           {weight:'30',reps:'10'},{weight:'30',reps:'10'},{weight:'35',reps:'10'},{weight:'35',reps:'10'},{weight:'25',reps:'12'}
         ]},
-        { name: '페이지안 케이블 컬', category: '이두', sets: [
+        { name: '페이지안 케이블 컬', category: 'Biceps', sets: [
           {weight:'17.5',reps:'12'},{weight:'21',reps:'12'}
         ]},
-        { name: '해머컬', category: '이두', sets: [
+        { name: '해머컬', category: 'Biceps', sets: [
           {weight:'10',reps:'13'},{weight:'10',reps:'13'}
         ]},
       ]
     },
     {
-      date: '2026-03-11', dayType: 'pull',
+      date: '2026-03-11', dayType: 'workout',
       exercises: [
-        { name: '바벨 로우', category: '등', sets: [
+        { name: '바벨 로우', category: 'Back', sets: [
           {weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'50',reps:'12'},
           {weight:'50',reps:'12'},{weight:'60',reps:'10'}
         ]},
-        { name: '중량 풀업', category: '등', sets: [
+        { name: '중량 풀업', category: 'Back', sets: [
           {weight:'10',reps:'8'},{weight:'10',reps:'6'},{weight:'0',reps:'10'},{weight:'0',reps:'10'}
         ]},
-        { name: '시티드 로우', category: '등', sets: [
+        { name: '시티드 로우', category: 'Back', sets: [
           {weight:'20',reps:'12'},{weight:'35',reps:'12'},{weight:'30',reps:'12'},{weight:'30',reps:'12'},{weight:'30',reps:'12'}
         ]},
-        { name: '렛 풀 다운', category: '등', sets: [
+        { name: '렛 풀 다운', category: 'Back', sets: [
           {weight:'40',reps:'10'},{weight:'40',reps:'10'},{weight:'40',reps:'10'},{weight:'40',reps:'10'}
         ]},
-        { name: '케이블 푸쉬 다운', category: '삼두', sets: [
+        { name: '케이블 푸쉬 다운', category: 'Triceps', sets: [
           {weight:'36',reps:'12'},{weight:'36',reps:'12'}
         ]},
-        { name: '오버헤드 익스텐션', category: '삼두', sets: [
+        { name: '오버헤드 익스텐션', category: 'Triceps', sets: [
           {weight:'32.5',reps:'12'},{weight:'32.5',reps:'12'}
         ]},
-        { name: '케이블 킥 백', category: '삼두', sets: [
+        { name: '케이블 킥 백', category: 'Triceps', sets: [
           {weight:'10',reps:'12'},{weight:'13.5',reps:'12'}
         ]},
       ]
     },
     {
-      date: '2026-03-12', dayType: 'legs',
+      date: '2026-03-12', dayType: 'workout',
       exercises: [
-        { name: '스쿼트', category: '하체', sets: [
+        { name: '스쿼트', category: 'Legs', sets: [
           {weight:'80',reps:'10'},{weight:'90',reps:'8'},{weight:'90',reps:'6'},{weight:'100',reps:'4'}
         ]},
-        { name: '레그 프레스', category: '하체', sets: [
+        { name: '레그 프레스', category: 'Legs', sets: [
           {weight:'140',reps:'15'},{weight:'140',reps:'14'},{weight:'80',reps:'12'}
         ]},
-        { name: '레그 익스텐션', category: '하체', sets: [
+        { name: '레그 익스텐션', category: 'Legs', sets: [
           {weight:'62',reps:'12'},{weight:'62',reps:'10'},{weight:'55',reps:'11'},{weight:'55',reps:'11'}
         ]},
-        { name: '레그 컬', category: '하체', sets: [
+        { name: '레그 컬', category: 'Legs', sets: [
           {weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'45',reps:'10'},{weight:'35',reps:'12'}
         ]},
-        { name: '이너타이 & 아웃타이', category: '하체', sets: [
+        { name: '이너타이 & 아웃타이', category: 'Legs', sets: [
           {weight:'45',reps:'12'},{weight:'45',reps:'12'},{weight:'32',reps:'10'},{weight:'32',reps:'10'}
         ]},
       ]
     },
     {
-      date: '2026-03-14', dayType: 'push',
+      date: '2026-03-14', dayType: 'workout',
       exercises: [
-        { name: '벤치 프레스', category: '가슴', sets: [
+        { name: '벤치 프레스', category: 'Chest', sets: [
           {weight:'60',reps:'10'},{weight:'70',reps:'10'},{weight:'70',reps:'6'},{weight:'75',reps:'5'}
         ]},
-        { name: '인클라인 덤벨 프레스', category: '가슴', sets: [
+        { name: '인클라인 덤벨 프레스', category: 'Chest', sets: [
           {weight:'20',reps:'12'},{weight:'20',reps:'12'},{weight:'20',reps:'12'},{weight:'16',reps:'12'},{weight:'16',reps:'12'}
         ]},
-        { name: '케이블 플라이', category: '가슴', sets: [
+        { name: '케이블 플라이', category: 'Chest', sets: [
           {weight:'17.5',reps:'14'},{weight:'17.5',reps:'14'},{weight:'21',reps:'12'},{weight:'21',reps:'12'}
         ]},
-        { name: '펙 덱 플라이', category: '가슴', sets: [
+        { name: '펙 덱 플라이', category: 'Chest', sets: [
           {weight:'35',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'}
         ]},
-        { name: '덤벨 숄더 프레스', category: '어깨', sets: [
+        { name: '덤벨 숄더 프레스', category: 'Shoulder', sets: [
           {weight:'14',reps:'12'},{weight:'16',reps:'12'},{weight:'20',reps:'10'},{weight:'20',reps:'10'},{weight:'16',reps:'12'}
         ]},
-        { name: '리버스 케이블 플라이', category: '어깨', sets: [
+        { name: '리버스 케이블 플라이', category: 'Shoulder', sets: [
           {weight:'7.5',reps:'12'},{weight:'7.5',reps:'12'},{weight:'10',reps:'12'},{weight:'10',reps:'12'}
         ]},
       ]
     },
     {
-      date: '2026-03-15', dayType: 'pull',
+      date: '2026-03-15', dayType: 'workout',
       exercises: [
-        { name: '바벨 로우', category: '등', sets: [
+        { name: '바벨 로우', category: 'Back', sets: [
           {weight:'40',reps:'12'},{weight:'50',reps:'12'},{weight:'60',reps:'12'},{weight:'60',reps:'10'},{weight:'60',reps:'10'}
         ]},
-        { name: '시티드 로우', category: '등', sets: [
+        { name: '시티드 로우', category: 'Back', sets: [
           {weight:'20',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'},{weight:'30',reps:'12'},{weight:'25',reps:'12'}
         ]},
-        { name: '렛 풀 다운', category: '등', sets: [
+        { name: '렛 풀 다운', category: 'Back', sets: [
           {weight:'32',reps:'12'},{weight:'32',reps:'12'},{weight:'32',reps:'10'},{weight:'32',reps:'10'}
         ]},
-        { name: '케이블 푸쉬 다운', category: '삼두', sets: [
+        { name: '케이블 푸쉬 다운', category: 'Triceps', sets: [
           {weight:'36',reps:'12'},{weight:'36',reps:'12'},{weight:'36',reps:'11'},{weight:'36',reps:'10'}
         ]},
-        { name: '이지바 컬', category: '이두', sets: [
+        { name: '이지바 컬', category: 'Biceps', sets: [
           {weight:'20',reps:'10'},{weight:'20',reps:'10'},{weight:'15',reps:'12'},{weight:'15',reps:'11'}
         ]},
-        { name: '이지바 익스텐션', category: '삼두', sets: [
+        { name: '이지바 익스텐션', category: 'Triceps', sets: [
           {weight:'25',reps:'12'},{weight:'25',reps:'12'}
         ]},
-        { name: '덤벨 컬', category: '이두', sets: [
+        { name: '덤벨 컬', category: 'Biceps', sets: [
           {weight:'10',reps:'11'},{weight:'10',reps:'11'}
         ]},
       ]
     },
     {
-      date: '2026-03-16', dayType: 'legs',
+      date: '2026-03-16', dayType: 'workout',
       exercises: [
-        { name: '스쿼트', category: '하체', sets: [
+        { name: '스쿼트', category: 'Legs', sets: [
           {weight:'80',reps:'10'},{weight:'90',reps:'8'},{weight:'90',reps:'8'},{weight:'100',reps:'5'}
         ]},
-        { name: '레그 프레스', category: '하체', sets: [
+        { name: '레그 프레스', category: 'Legs', sets: [
           {weight:'140',reps:'15'},{weight:'140',reps:'14'},{weight:'100',reps:'12'}
         ]},
-        { name: '레그 익스텐션', category: '하체', sets: [
+        { name: '레그 익스텐션', category: 'Legs', sets: [
           {weight:'62',reps:'12'},{weight:'62',reps:'12'},{weight:'62',reps:'12'}
         ]},
-        { name: '레그 컬', category: '하체', sets: [
+        { name: '레그 컬', category: 'Legs', sets: [
           {weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'40',reps:'12'},{weight:'30',reps:'12'}
         ]},
-        { name: '힙 쓰러스트', category: '하체', sets: [
+        { name: '힙 쓰러스트', category: 'Legs', sets: [
           {weight:'20',reps:'12'},{weight:'20',reps:'12'},{weight:'20',reps:'12'}
         ]},
-        { name: '불가리안 스플릿 스쿼트', category: '하체', sets: [
+        { name: '불가리안 스플릿 스쿼트', category: 'Legs', sets: [
           {weight:'8',reps:'12'},{weight:'8',reps:'12'},{weight:'8',reps:'12'}
         ]},
       ]
     },
     {
-      date: '2026-03-17', dayType: 'push',
+      date: '2026-03-17', dayType: 'workout',
       exercises: [
-        { name: '벤치 프레스 탑세트', category: '가슴', sets: [
+        { name: '벤치 프레스 탑세트', category: 'Chest', sets: [
           {weight:'80',reps:'5'},{weight:'80',reps:'4'}
         ]},
-        { name: '인클라인 덤벨 프레스', category: '가슴', sets: [
+        { name: '인클라인 덤벨 프레스', category: 'Chest', sets: [
           {weight:'20',reps:'12'},{weight:'20',reps:'12'},{weight:'20',reps:'13'},{weight:'16',reps:'13'},{weight:'16',reps:'12'}
         ]},
-        { name: '케이블 플라이', category: '가슴', sets: [
+        { name: '케이블 플라이', category: 'Chest', sets: [
           {weight:'17.5',reps:'14'},{weight:'21',reps:'13'},{weight:'21',reps:'12'},{weight:'21',reps:'12'}
         ]},
-        { name: '펙 덱 플라이', category: '가슴', sets: [
+        { name: '펙 덱 플라이', category: 'Chest', sets: [
           {weight:'35',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'}
         ]},
-        { name: '페이지안 케이블 컬', category: '이두', sets: [
+        { name: '페이지안 케이블 컬', category: 'Biceps', sets: [
           {weight:'21',reps:'12'},{weight:'25',reps:'10'}
         ]},
-        { name: '해머컬', category: '이두', sets: [
+        { name: '해머컬', category: 'Biceps', sets: [
           {weight:'12',reps:'12'},{weight:'10',reps:'12'}
         ]},
-        { name: '이지바 컬', category: '이두', sets: [
+        { name: '이지바 컬', category: 'Biceps', sets: [
           {weight:'15',reps:'12'}
         ]},
       ]
     },
     {
-      date: '2026-03-18', dayType: 'pull',
+      date: '2026-03-18', dayType: 'workout',
       exercises: [
-        { name: '바벨 로우', category: '등', sets: [
+        { name: '바벨 로우', category: 'Back', sets: [
           {weight:'40',reps:'12'},{weight:'50',reps:'12'},{weight:'60',reps:'12'},{weight:'60',reps:'12'},{weight:'60',reps:'12'}
         ]},
-        { name: '시티드 로우', category: '등', sets: [
+        { name: '시티드 로우', category: 'Back', sets: [
           {weight:'30',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'12'},{weight:'35',reps:'10'},{weight:'25',reps:'12'}
         ]},
-        { name: '와이드 풀 다운', category: '등', sets: [
+        { name: '와이드 풀 다운', category: 'Back', sets: [
           {weight:'25',reps:'12'},{weight:'25',reps:'12'},{weight:'25',reps:'11'},{weight:'20',reps:'12'}
         ]},
-        { name: '렛 풀 다운', category: '등', sets: [
+        { name: '렛 풀 다운', category: 'Back', sets: [
           {weight:'40',reps:'12'},{weight:'32',reps:'12'}
         ]},
-        { name: '케이블 푸쉬 다운', category: '삼두', sets: [
+        { name: '케이블 푸쉬 다운', category: 'Triceps', sets: [
           {weight:'36',reps:'15'},{weight:'36',reps:'12'}
         ]},
-        { name: '오버헤드 익스텐션', category: '삼두', sets: [
+        { name: '오버헤드 익스텐션', category: 'Triceps', sets: [
           {weight:'32.5',reps:'13'},{weight:'32.5',reps:'12'},{weight:'32.5',reps:'12'}
         ]},
       ]
     },
     {
-      date: '2026-03-20', dayType: 'legs',
+      date: '2026-03-20', dayType: 'workout',
       exercises: [
-        { name: '스쿼트', category: '하체', sets: [
+        { name: '스쿼트', category: 'Legs', sets: [
           {weight:'100',reps:'6'},{weight:'100',reps:'4'}
         ]},
-        { name: '레그 프레스', category: '하체', sets: [
+        { name: '레그 프레스', category: 'Legs', sets: [
           {weight:'140',reps:'15'},{weight:'140',reps:'15'},{weight:'100',reps:'12'}
         ]},
-        { name: '레그 익스텐션', category: '하체', sets: [
+        { name: '레그 익스텐션', category: 'Legs', sets: [
           {weight:'62',reps:'12'},{weight:'62',reps:'12'},{weight:'62',reps:'10'}
         ]},
-        { name: '레그 컬', category: '하체', sets: [
+        { name: '레그 컬', category: 'Legs', sets: [
           {weight:'50',reps:'12'},{weight:'50',reps:'10'},{weight:'50',reps:'8'},{weight:'45',reps:'12'}
         ]},
-        { name: '힙 어브덕터', category: '하체', sets: [
+        { name: '힙 어브덕터', category: 'Legs', sets: [
           {weight:'47',reps:'14'},{weight:'47',reps:'12'},{weight:'32',reps:'12'},{weight:'32',reps:'12'}
         ]},
-        { name: '런지', category: '하체', sets: [
+        { name: '런지', category: 'Legs', sets: [
           {weight:'8',reps:'12'},{weight:'8',reps:'12'}
         ]},
       ]
