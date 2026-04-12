@@ -2180,13 +2180,15 @@ function migrateSessionsToMuscles() {
     const base = DAYTYPE_TO_MUSCLES[s.dayType] || [];
     const muscles = fromCats.length ? fromCats : base;
 
-    // 빈 배열 포함 — muscles 없거나 비어있거나 유효하지 않으면 재생성
-    const needsUpdate = !s.muscles || s.muscles.length === 0 ||
-      !s.muscles.some(m => ALL_MUSCLES.includes(m));
-    if (needsUpdate && muscles.length > 0) {
+    // muscles 없거나 비어있거나 유효 근육군 없으면 재생성
+    const hasValidMuscles = s.muscles && s.muscles.length > 0 &&
+      s.muscles.some(m => ALL_MUSCLES.includes(m));
+    if (!hasValidMuscles && muscles.length > 0) {
       s.muscles = muscles;
       changed = true;
     }
+    // muscles는 있지만 exercises 카테고리가 아직 한글인 경우
+    // → 이미 위에서 한글→영문 변환 처리했으므로 저장만 하면 됨
 
     // 3. push/pull/legs → workout
     if (['push','pull','legs'].includes(s.dayType)) {
@@ -2200,6 +2202,7 @@ function migrateSessionsToMuscles() {
     console.log(`✅ 세션 마이그레이션 완료 — ${sessions.length}개 세션 처리`);
   }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   // 기존 세션 focus 자동 마이그레이션
@@ -4901,18 +4904,68 @@ const ANAL_METRICS = [
 ];
 
 // 부위별 세션에서 지표값 계산
-function calcAnalValue(session, metricId) {
+function resolveExerciseMuscle(ex) {
+  const ALL_MUSCLES = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+  const cat = (ex.category || '').trim();
+
+  // 1. 이미 영문 근육군
+  if (ALL_MUSCLES.includes(cat)) return cat;
+
+  // 2. 한글 → 영문
+  const fromKo = MUSCLE_KO_TO_EN[cat];
+  if (fromKo && ALL_MUSCLES.includes(fromKo)) return fromKo;
+
+  // 3. 종목명으로 추론
+  if (ex.name) {
+    const inferred = getCategory(ex.name.trim());
+    if (ALL_MUSCLES.includes(inferred)) return inferred;
+  }
+
+  // 4. 부분 문자열 매칭 (한글 카테고리 변형 처리)
+  const KO_MAP = [
+    ['가슴','Chest'],['chest','Chest'],
+    ['등','Back'],['back','Back'],['lat','Back'],
+    ['어깨','Shoulder'],['shoulder','Shoulder'],['delt','Shoulder'],
+    ['하체','Legs'],['legs','Legs'],['squat','Legs'],['leg','Legs'],
+    ['이두','Biceps'],['bicep','Biceps'],['curl','Biceps'],
+    ['삼두','Triceps'],['tricep','Triceps'],
+  ];
+  const lc = cat.toLowerCase();
+  for (const [kw, eng] of KO_MAP) {
+    if (lc.includes(kw.toLowerCase())) return eng;
+  }
+
+  return null;
+}
+
+function calcAnalValue(session, metricId, muscle) {
+  // muscle 지정 시 해당 부위 종목만 필터
+  let exList;
+  if (muscle) {
+    exList = (session.exercises||[]).filter(ex => resolveExerciseMuscle(ex) === muscle);
+    // 필터 결과 없으면 폴백: 세션 전체 사용 (카테고리 미분류 경우)
+    if (exList.length === 0 && (session.muscles||[]).includes(muscle)) {
+      exList = session.exercises || [];
+    }
+  } else {
+    exList = session.exercises || [];
+  }
+
   if (metricId === 'vol') {
-    return session.exercises.reduce((sum, ex) =>
+    return exList.reduce((sum, ex) =>
       sum + ex.sets.reduce((s2, set) =>
         s2 + parseFloat(set.weight||0) * parseInt(set.reps||0), 0), 0);
   }
   if (metricId === 'cal') {
+    if (muscle) {
+      const partialSession = { ...session, exercises: exList };
+      return estimateSessionCalories(partialSession);
+    }
     return estimateSessionCalories(session);
   }
   if (metricId === 'rm') {
     let max = 0;
-    session.exercises.forEach(ex => {
+    exList.forEach(ex => {
       ex.sets.forEach(set => {
         const w = parseFloat(set.weight||0), r = parseInt(set.reps||0);
         if (w > 0 && r > 0) {
@@ -4931,16 +4984,9 @@ function getMuscleSessions(muscle) {
     if (s.dayType === 'running') return false;
     // muscles[] 있으면 우선 사용
     if (s.muscles?.length) return s.muscles.includes(muscle);
-    // 없으면 종목 카테고리로 판단
-    return (s.exercises||[]).some(ex => {
-      const cat = ex.category || '';
-      const eng = MUSCLE_KO_TO_EN[cat] || cat;
-      if (eng === muscle) return true;
-      // 카테고리 없으면 종목명으로 추론
-      if (!cat) return getCategory(ex.name) === muscle;
-      return false;
-    });
-  }).slice(0, 12).reverse(); // 오래된→최신
+    // 없으면 종목별 resolveExerciseMuscle로 판단
+    return (s.exercises||[]).some(ex => resolveExerciseMuscle(ex) === muscle);
+  }).slice(0, 12).reverse();
 }
 
 function renderAnalMetricCards() {
@@ -4963,16 +5009,16 @@ function renderAnalMetricCards() {
   const prev = muscleSessions.length >= 2 ? muscleSessions[muscleSessions.length - 2] : null;
 
   grid.innerHTML = ANAL_METRICS.map(m => {
-    const val = calcAnalValue(last, m.id);
-    const prevVal = prev ? calcAnalValue(prev, m.id) : null;
+    const val = calcAnalValue(last, m.id, muscle);
+    const prevVal = prev ? calcAnalValue(prev, m.id, muscle) : null;
 
     let displayVal, changeHtml;
 
     if (m.id === 'lo') {
       // 점진적 과부하: 볼륨 변화율
       if (prevVal && prevVal > 0) {
-        const curVol = calcAnalValue(last, 'vol');
-        const pVol = calcAnalValue(prev, 'vol');
+        const curVol = calcAnalValue(last, 'vol', muscle);
+        const pVol = calcAnalValue(prev, 'vol', muscle);
         const pct = ((curVol - pVol) / pVol * 100);
         displayVal = (pct >= 0 ? '+' : '') + pct.toFixed(1);
         const cls = pct >= 0 ? 'amc-up' : 'amc-down';
@@ -5037,11 +5083,11 @@ function renderAnalChart(muscle, muscleSessions) {
     let val;
     if (metric.id === 'lo') {
       if (i === 0) return { date: s.date.slice(5).replace('-','/'), val: null };
-      const cur = calcAnalValue(s, 'vol');
-      const prv = calcAnalValue(muscleSessions[i-1], 'vol');
+      const cur = calcAnalValue(s, 'vol', muscle);
+      const prv = calcAnalValue(muscleSessions[i-1], 'vol', muscle);
       val = prv > 0 ? parseFloat(((cur - prv) / prv * 100).toFixed(2)) : 0;
     } else {
-      val = calcAnalValue(s, metric.id);
+      val = calcAnalValue(s, metric.id, muscle);
     }
     return { date: s.date.slice(5).replace('-','/'), val };
   });
@@ -5528,7 +5574,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-btn')[tabMap[tab]].classList.add('active');
 
   if (tab === 'history') { renderHistory(); }
-  if (tab === 'feedback') { renderMetrics(); renderAnalMetricCards(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); renderMuscleVolumePanel(); renderMuscleTrendChart(); }
+  if (tab === 'feedback') { migrateSessionsToMuscles(); renderMetrics(); renderAnalMetricCards(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); renderMuscleVolumePanel(); renderMuscleTrendChart(); }
 }
 
 function openCurrentGuide() {
