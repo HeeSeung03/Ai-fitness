@@ -1370,6 +1370,81 @@
   .anal-tooltip-date { color: var(--text3); font-size: 10px; margin-bottom: 2px; }
   .anal-tooltip-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
 
+  /* 통합 타임라인 */
+  .timeline-legend {
+    display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;
+  }
+  .timeline-legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--text3); cursor: pointer;
+  }
+  .timeline-legend-line {
+    width: 18px; height: 2px; border-radius: 2px; flex-shrink: 0;
+  }
+  .timeline-legend-line.dashed {
+    background: repeating-linear-gradient(90deg, currentColor 0, currentColor 4px, transparent 4px, transparent 8px);
+  }
+  .timeline-muscle-filter {
+    display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .tl-muscle-btn {
+    padding: 3px 10px; border-radius: 12px; font-size: 11px;
+    border: 1px solid var(--border); background: none;
+    color: var(--text3); cursor: pointer; font-family: inherit;
+    transition: all 0.15s; font-weight: 700;
+  }
+  .tl-muscle-btn.active {
+    border-color: var(--accent); background: rgba(200,245,66,0.1);
+    color: var(--accent);
+  }
+  .insight-card {
+    background: var(--surface2); border-radius: 8px;
+    padding: 10px 13px; margin-top: 12px;
+    border-left: 3px solid var(--accent);
+  }
+  .insight-card.warn { border-left-color: #f5a742; }
+  .insight-card.good { border-left-color: var(--accent); }
+  .insight-card.info { border-left-color: #42c5f5; }
+  .insight-text { font-size: 11px; color: var(--text2); line-height: 1.6; }
+
+  /* 피드백 고도화 */
+  .advanced-insight-panel {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .adv-insight-card {
+    background: var(--surface2); border-radius: 10px;
+    padding: 13px 15px; border-left: 3px solid var(--border);
+    transition: border-color 0.2s;
+  }
+  .adv-insight-card.good  { border-left-color: var(--accent); }
+  .adv-insight-card.warn  { border-left-color: #f5a742; }
+  .adv-insight-card.alert { border-left-color: #f54242; }
+  .adv-insight-card.info  { border-left-color: #42c5f5; }
+  .adv-insight-header {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+  }
+  .adv-insight-icon { font-size: 16px; }
+  .adv-insight-title {
+    font-size: 12px; font-weight: 700; color: var(--text);
+  }
+  .adv-insight-body {
+    font-size: 11px; color: var(--text2); line-height: 1.7;
+  }
+  .adv-insight-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; margin-left: 6px;
+    vertical-align: middle;
+  }
+  .adv-insight-metric {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+  }
+  .adv-metric-chip {
+    padding: 3px 10px; border-radius: 12px; font-size: 10px;
+    font-weight: 700; background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
   /* GOAL CARD 개선 */
   .goal-card-guide {
     font-size: 9px; color: var(--text3); line-height: 1.5;
@@ -2016,6 +2091,28 @@
         </div>
       </div>
 
+      <!-- 통합 타임라인 -->
+      <div class="feedback-panel">
+        <div class="panel-header">🔗 통합 타임라인 — 볼륨 × 체성분</div>
+        <div class="panel-body">
+          <div class="timeline-muscle-filter" id="tl-muscle-filter"></div>
+          <div id="timeline-chart"></div>
+          <div id="timeline-insights"></div>
+        </div>
+      </div>
+
+      <!-- 피드백 고도화 -->
+      <div class="feedback-panel">
+        <div class="panel-header">🧠 통합 분석 인사이트</div>
+        <div class="panel-body">
+          <div class="advanced-insight-panel" id="advanced-insight-panel">
+            <div style="color:var(--text3);font-size:12px;text-align:center;padding:16px 0;">
+              세션을 저장하면 분석이 시작됩니다
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -2236,6 +2333,9 @@ document.addEventListener('DOMContentLoaded', () => {
   renderRestPanel();
   renderMuscleVolumePanel();
   renderMuscleTrendChart();
+  initTimelineFilter();
+  renderTimelineChart();
+  renderAdvancedInsights();
 
   // 작성 중 복구 확인
   checkDraftRecovery();
@@ -2338,14 +2438,7 @@ function getCategory(name) {
 
 function updateExerciseName(exIdx, val) {
   currentExercises[exIdx].name = val;
-  const autoCat = getCategory(val);
-  if (!currentExercises[exIdx].category ||
-      currentExercises[exIdx].category === '기타') {
-    currentExercises[exIdx].category = autoCat;
-    const cards = document.querySelectorAll('.exercise-card');
-    const select = cards[exIdx]?.querySelector('.category-select');
-    if (select) select.value = autoCat;
-  }
+  // 자동 카테고리 감지 제거 — 사용자가 직접 선택
   saveDraft();
 }
 
@@ -2800,6 +2893,9 @@ function saveSession() {
   renderRestPanel();
   renderMuscleVolumePanel();
   renderMuscleTrendChart();
+  initTimelineFilter();
+  renderTimelineChart();
+  renderAdvancedInsights();
 
   // 과거 날짜 세션은 비교 모달 생략
   if (isPastDate) {
@@ -3370,9 +3466,19 @@ function renderHistory() {
     const muscleTags = s.dayType === 'running' ? ['🏃 Running']
       : s.dayType === 'free' ? ['💪 Weak Day']
       : (() => {
-          const mList = s.muscles?.length ? s.muscles
-            : [...new Set((s.exercises||[]).map(ex => MUSCLE_KO_TO_EN[ex.category||''] || ex.category || 'Other').filter(m => m && m !== 'Other'))];
-          return mList.length ? mList : ['Workout'];
+          // muscles[] 우선 — 없으면 종목 카테고리로 계산
+          if (s.muscles?.length && s.muscles.some(m =>
+              ['Chest','Back','Shoulder','Legs','Biceps','Triceps'].includes(m))) {
+            return s.muscles.filter(m =>
+              ['Chest','Back','Shoulder','Legs','Biceps','Triceps'].includes(m));
+          }
+          const fromCats = [...new Set(
+            (s.exercises||[]).map(ex => {
+              const cat = ex.category || '';
+              return MUSCLE_KO_TO_EN[cat] || cat;
+            }).filter(m => ['Chest','Back','Shoulder','Legs','Biceps','Triceps'].includes(m))
+          )];
+          return fromCats.length ? fromCats : ['Workout'];
         })();
     const badge = muscleTags.map(m => {
       const info = MUSCLE_INFO[m] || { color: '#c8f542' };
@@ -3657,6 +3763,9 @@ function deleteSession(id) {
   renderRestPanel();
   renderMuscleVolumePanel();
   renderMuscleTrendChart();
+  initTimelineFilter();
+  renderTimelineChart();
+  renderAdvancedInsights();
   showToast('세션이 삭제되었습니다');
 }
 
@@ -3787,6 +3896,17 @@ function saveEditSession() {
     ex.sets = ex.sets.filter(s => s.weight || s.reps);
     if (!ex.sets.length) ex.sets = [{ weight: '', reps: '' }];
   });
+
+  // 카테고리 변경 반영 — muscles[] 재계산
+  const ALL_MUSCLES_EDIT = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+  const newMuscles = [...new Set(
+    editSession.exercises.map(ex => {
+      const cat = ex.category || '';
+      const eng = MUSCLE_KO_TO_EN[cat] || cat;
+      return ALL_MUSCLES_EDIT.includes(eng) ? eng : resolveExerciseMuscle(ex);
+    }).filter(Boolean)
+  )];
+  if (newMuscles.length > 0) editSession.muscles = newMuscles;
 
   sessions[idx] = editSession;
   sessions.sort((a, b) => b.date.localeCompare(a.date));
@@ -4939,13 +5059,34 @@ function resolveExerciseMuscle(ex) {
 }
 
 function calcAnalValue(session, metricId, muscle) {
-  // muscle 지정 시 해당 부위 종목만 필터
   let exList;
   if (muscle) {
+    const ALL_M = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+
+    // 1단계: resolveExerciseMuscle 매칭
     exList = (session.exercises||[]).filter(ex => resolveExerciseMuscle(ex) === muscle);
-    // 필터 결과 없으면 폴백: 세션 전체 사용 (카테고리 미분류 경우)
-    if (exList.length === 0 && (session.muscles||[]).includes(muscle)) {
-      exList = session.exercises || [];
+
+    // 2단계: 매칭 실패 시 muscles[] 확인 후 전체 사용
+    if (exList.length === 0) {
+      const mList = session.muscles || [];
+      if (mList.includes(muscle)) {
+        // muscles[]에는 있지만 카테고리 매칭 실패 → 전체 exercises 사용
+        exList = session.exercises || [];
+      }
+    }
+
+    // 3단계: 그래도 없으면 sessions muscles[]로 비례 추정
+    // (다른 부위와 섞인 세션에서 해당 부위 비중만큼 분리)
+    if (exList.length === 0) {
+      const mList = (session.muscles || []).filter(m => ALL_M.includes(m));
+      if (mList.includes(muscle) && mList.length > 0) {
+        // 해당 부위 비중 = 1/총부위수
+        const ratio = 1 / mList.length;
+        const total = (session.exercises||[]).reduce((sum, ex) =>
+          sum + ex.sets.reduce((s2, set) =>
+            s2 + parseFloat(set.weight||0) * parseInt(set.reps||0), 0), 0);
+        if (metricId === 'vol') return Math.round(total * ratio);
+      }
     }
   } else {
     exList = session.exercises || [];
@@ -5016,16 +5157,26 @@ function renderAnalMetricCards() {
 
     if (m.id === 'lo') {
       // 점진적 과부하: 볼륨 변화율
-      if (prevVal && prevVal > 0) {
-        const curVol = calcAnalValue(last, 'vol', muscle);
-        const pVol = calcAnalValue(prev, 'vol', muscle);
+      // muscle 필터 먼저, 안 되면 전체 세션 볼륨으로 계산
+      let curVol = calcAnalValue(last, 'vol', muscle);
+      let pVol   = prev ? calcAnalValue(prev, 'vol', muscle) : 0;
+
+      // 부위 필터 실패 시 세션 전체 볼륨으로 폴백
+      if (curVol === 0) curVol = (last.exercises||[]).reduce((s,ex) =>
+        s + ex.sets.reduce((s2,set) =>
+          s2 + parseFloat(set.weight||0)*parseInt(set.reps||0), 0), 0);
+      if (pVol === 0 && prev) pVol = (prev.exercises||[]).reduce((s,ex) =>
+        s + ex.sets.reduce((s2,set) =>
+          s2 + parseFloat(set.weight||0)*parseInt(set.reps||0), 0), 0);
+
+      if (pVol > 0) {
         const pct = ((curVol - pVol) / pVol * 100);
         displayVal = (pct >= 0 ? '+' : '') + pct.toFixed(1);
-        const cls = pct >= 0 ? 'amc-up' : 'amc-down';
-        changeHtml = `<div class="amc-change ${cls}">직전 세션 대비</div>`;
+        const cls = pct >= 5 ? 'amc-up' : pct < 0 ? 'amc-down' : 'amc-neutral';
+        changeHtml = `<div class="amc-change ${cls}">직전 세션 대비 볼륨 변화</div>`;
       } else {
         displayVal = '—';
-        changeHtml = `<div class="amc-change amc-neutral">데이터 부족</div>`;
+        changeHtml = `<div class="amc-change amc-neutral">직전 세션 필요</div>`;
       }
     } else {
       displayVal = m.id === 'vol' || m.id === 'cal'
@@ -5082,9 +5233,15 @@ function renderAnalChart(muscle, muscleSessions) {
   const dataPoints = muscleSessions.map((s, i) => {
     let val;
     if (metric.id === 'lo') {
-      if (i === 0) return { date: s.date.slice(5).replace('-','/'), val: null };
-      const cur = calcAnalValue(s, 'vol', muscle);
-      const prv = calcAnalValue(muscleSessions[i-1], 'vol', muscle);
+      if (i === 0) return { date: s.date.slice(5).replace('-','/'), val: 0 };
+      let cur = calcAnalValue(s, 'vol', muscle);
+      let prv = calcAnalValue(muscleSessions[i-1], 'vol', muscle);
+      // 부위 필터 실패 시 전체 세션 볼륨으로 폴백
+      const totalVol = (sess) => (sess.exercises||[]).reduce((sum,ex) =>
+        sum + ex.sets.reduce((s2,set) =>
+          s2 + parseFloat(set.weight||0)*parseInt(set.reps||0), 0), 0);
+      if (cur === 0) cur = totalVol(s);
+      if (prv === 0) prv = totalVol(muscleSessions[i-1]);
       val = prv > 0 ? parseFloat(((cur - prv) / prv * 100).toFixed(2)) : 0;
     } else {
       val = calcAnalValue(s, metric.id, muscle);
@@ -5229,6 +5386,537 @@ function renderAnalChart(muscle, muscleSessions) {
       if (tip) tip.style.opacity = '0';
     });
   });
+}
+
+
+// ==================== 통합 타임라인 ====================
+let tlCurrentMuscle = 'Chest';
+
+function initTimelineFilter() {
+  const bar = document.getElementById('tl-muscle-filter');
+  if (!bar) return;
+  const muscles = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+  bar.innerHTML = muscles.map(m => {
+    const col = MUSCLE_VOLUME_GOALS[m]?.color || 'var(--accent)';
+    return `<button class="tl-muscle-btn ${m === tlCurrentMuscle ? 'active' : ''}"
+      data-muscle="${m}"
+      style="${m === tlCurrentMuscle ? `border-color:${col};background:${col}18;color:${col}` : ''}"
+      onclick="selectTLMuscle('${m}','${col}',this)">${m}</button>`;
+  }).join('');
+}
+
+function selectTLMuscle(muscle, col, btn) {
+  tlCurrentMuscle = muscle;
+  document.querySelectorAll('.tl-muscle-btn').forEach(b => {
+    b.className = 'tl-muscle-btn';
+    b.style.cssText = '';
+  });
+  btn.classList.add('active');
+  btn.style.cssText = `border-color:${col};background:${col}18;color:${col}`;
+  renderTimelineChart();
+}
+
+function renderTimelineChart() {
+  const el = document.getElementById('timeline-chart');
+  const insightEl = document.getElementById('timeline-insights');
+  if (!el) return;
+
+  const muscle = tlCurrentMuscle;
+  const muscleCol = MUSCLE_VOLUME_GOALS[muscle]?.color || 'var(--accent)';
+
+  // ── 세션 볼륨 데이터 (해당 부위) ──
+  const muscleSessions = getMuscleSessions(muscle);
+  if (muscleSessions.length < 2) {
+    el.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0;">
+      ${muscle} 세션이 2개 이상 필요합니다</div>`;
+    if (insightEl) insightEl.innerHTML = '';
+    return;
+  }
+
+  // ── 체성분 데이터 ──
+  const bodyLogs = JSON.parse(localStorage.getItem('fitcore_bodycomp') || '[]');
+
+  // 날짜 범위: 세션 첫날 ~ 오늘
+  const firstDate = muscleSessions[0].date;
+  const lastDate  = muscleSessions[muscleSessions.length-1].date;
+
+  // 볼륨 포인트
+  const volPts = muscleSessions.map(s => ({
+    date: s.date,
+    val: calcAnalValue(s, 'vol', muscle)
+  }));
+
+  // 체성분 포인트 (같은 기간)
+  const weightPts = bodyLogs.filter(l => l.date >= firstDate && l.weight != null)
+    .map(l => ({ date: l.date, val: l.weight })).sort((a,b)=>a.date.localeCompare(b.date));
+  const fatPts = bodyLogs.filter(l => l.date >= firstDate && l.fat != null)
+    .map(l => ({ date: l.date, val: l.fat })).sort((a,b)=>a.date.localeCompare(b.date));
+  const musclePts = bodyLogs.filter(l => l.date >= firstDate && l.muscle != null)
+    .map(l => ({ date: l.date, val: l.muscle })).sort((a,b)=>a.date.localeCompare(b.date));
+
+  // SVG 설정
+  const W = 600, H = 220;
+  const PAD = { top: 28, right: 60, bottom: 36, left: 56 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+
+  // 날짜 → X 변환 (공통 타임라인)
+  const allDates = [...new Set([
+    ...volPts.map(p=>p.date),
+    ...weightPts.map(p=>p.date),
+    ...fatPts.map(p=>p.date),
+    ...musclePts.map(p=>p.date),
+  ])].sort();
+
+  if (allDates.length < 2) {
+    el.innerHTML = `<div style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0;">데이터 부족</div>`;
+    return;
+  }
+
+  const minT = new Date(allDates[0]).getTime();
+  const maxT = new Date(allDates[allDates.length-1]).getTime();
+  const tRange = maxT - minT || 1;
+  const toX = dateStr => PAD.left + ((new Date(dateStr).getTime() - minT) / tRange) * cW;
+
+  // 볼륨 Y축 (왼쪽)
+  const volVals = volPts.map(p=>p.val).filter(v=>v>0);
+  const volMin = Math.min(...volVals) * 0.85;
+  const volMax = Math.max(...volVals) * 1.1;
+  const toYVol = v => PAD.top + cH - ((v - volMin) / (volMax - volMin || 1)) * cH;
+
+  // 체성분 Y축 (오른쪽) — 체중 기준
+  const bodyVals = [...weightPts, ...musclePts].map(p=>p.val).filter(v=>v>0);
+  const bodyMin = bodyVals.length ? Math.min(...bodyVals) * 0.97 : 50;
+  const bodyMax = bodyVals.length ? Math.max(...bodyVals) * 1.03 : 100;
+  const toYBody = v => PAD.top + cH - ((v - bodyMin) / (bodyMax - bodyMin || 1)) * cH;
+
+  // 체지방% Y축 (0~40 범위)
+  const fatVals = fatPts.map(p=>p.val);
+  const fatMin = fatVals.length ? Math.min(...fatVals) * 0.9 : 0;
+  const fatMax = fatVals.length ? Math.max(...fatVals) * 1.1 : 40;
+  const toYFat = v => PAD.top + cH - ((v - fatMin) / (fatMax - fatMin || 1)) * cH;
+
+  // Y축 눈금 (볼륨 왼쪽)
+  const yTicks = Array.from({length:5}, (_,i) => volMin + (volMax-volMin)/4*i);
+  const yGrid = yTicks.map(v => {
+    const y = toYVol(v);
+    return `<line x1="${PAD.left}" y1="${y}" x2="${W-PAD.right}" y2="${y}"
+      stroke="#2a2a3a" stroke-width="1"/>
+    <text x="${PAD.left-6}" y="${y+4}" text-anchor="end" font-size="9" fill="#555568">
+      ${Math.round(v/1000*10)/10}t</text>`;
+  }).join('');
+
+  // 오른쪽 Y축 눈금 (체중)
+  const yTicksR = bodyVals.length
+    ? Array.from({length:4}, (_,i) => bodyMin + (bodyMax-bodyMin)/3*i)
+    : [];
+  const yGridR = yTicksR.map(v => {
+    const y = toYBody(v);
+    return `<text x="${W-PAD.right+6}" y="${y+4}" text-anchor="start"
+      font-size="9" fill="#8888a0">${v.toFixed(1)}</text>`;
+  }).join('');
+
+  // X축 레이블
+  const labelDates = allDates.filter((_,i) => i===0 || i===allDates.length-1 ||
+    i % Math.ceil(allDates.length/5) === 0);
+  const xLabels = labelDates.map(d =>
+    `<text x="${toX(d)}" y="${H-8}" text-anchor="middle"
+      font-size="9" fill="#555568">${d.slice(5).replace('-','/')}</text>`
+  ).join('');
+
+  // 볼륨 선 + 그라데이션
+  const gid = 'tl' + Date.now();
+  const volLine = volPts.map(p=>`${toX(p.date)},${toYVol(p.val)}`).join(' ');
+  const volArea = [
+    `${toX(volPts[0].date)},${PAD.top+cH}`,
+    ...volPts.map(p=>`${toX(p.date)},${toYVol(p.val)}`),
+    `${toX(volPts[volPts.length-1].date)},${PAD.top+cH}`
+  ].join(' ');
+
+  const volDots = volPts.map((p,i) => {
+    const isLast = i===volPts.length-1;
+    return `<circle cx="${toX(p.date)}" cy="${toYVol(p.val)}" r="${isLast?6:3.5}"
+      fill="${isLast?muscleCol:'var(--bg)'}" stroke="${muscleCol}" stroke-width="2"
+      style="${isLast?`filter:drop-shadow(0 0 4px ${muscleCol}66)`:''}" />`;
+  }).join('');
+
+  // 체중 선
+  const makeBodyLine = (pts, col, toY) => {
+    if (pts.length < 2) return {line:'',dots:''};
+    const line = `<polyline points="${pts.map(p=>`${toX(p.date)},${toY(p.val)}`).join(' ')}"
+      fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="5,3"
+      stroke-linejoin="round" opacity="0.8"/>`;
+    const dots = pts.map((p,i) => {
+      const isLast = i===pts.length-1;
+      const lbl = isLast ? p.val.toFixed(1) : '';
+      return `<circle cx="${toX(p.date)}" cy="${toY(p.val)}" r="3"
+        fill="${col}" opacity="0.9"/>
+        ${isLast ? `<text x="${toX(p.date)+6}" y="${toY(p.val)+4}"
+          font-size="9" fill="${col}">${lbl}</text>` : ''}`;
+    }).join('');
+    return { line, dots };
+  };
+
+  const wLine  = makeBodyLine(weightPts, '#8888a0', toYBody);
+  const mLine  = makeBodyLine(musclePts, 'var(--accent)', toYBody);
+  const fLine  = makeBodyLine(fatPts, '#f5a742', toYFat);
+
+  // 체성분 데이터 없으면 안내
+  const noBodyMsg = bodyVals.length === 0 ? `
+    <text x="${PAD.left + cW/2}" y="${PAD.top + cH/2}"
+      text-anchor="middle" font-size="11" fill="#555568">
+      체성분을 기록하면 체중·골격근 추이가 함께 표시됩니다
+    </text>` : '';
+
+  el.innerHTML = `
+    <div class="timeline-legend">
+      <div class="timeline-legend-item">
+        <div class="timeline-legend-line" style="background:${muscleCol};height:3px;"></div>
+        <span>${muscle} 볼륨</span>
+      </div>
+      ${bodyVals.length ? `
+      <div class="timeline-legend-item">
+        <div class="timeline-legend-line dashed" style="background:#8888a0;"></div>
+        <span style="color:#8888a0">체중</span>
+      </div>
+      <div class="timeline-legend-item">
+        <div class="timeline-legend-line dashed" style="background:var(--accent);"></div>
+        <span style="color:var(--accent)">골격근량</span>
+      </div>
+      <div class="timeline-legend-item">
+        <div class="timeline-legend-line dashed" style="background:#f5a742;"></div>
+        <span style="color:#f5a742">체지방%</span>
+      </div>` : ''}
+    </div>
+    <div style="position:relative;">
+      <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;overflow:visible">
+        <defs>
+          <linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${muscleCol}" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="${muscleCol}" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        ${yGrid}
+        ${yGridR}
+        ${xLabels}
+        <polygon points="${volArea}" fill="url(#${gid})"/>
+        <polyline points="${volLine}" fill="none" stroke="${muscleCol}"
+          stroke-width="2.5" stroke-linejoin="round"/>
+        ${volDots}
+        ${wLine.line}${wLine.dots}
+        ${mLine.line}${mLine.dots}
+        ${fLine.line}${fLine.dots}
+        ${noBodyMsg}
+        <line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top+cH}"
+          stroke="#2a2a3a" stroke-width="1"/>
+      </svg>
+    </div>`;
+
+  // ── 인사이트 자동 생성 ──
+  renderTimelineInsights(muscle, volPts, weightPts, musclePts, fatPts);
+}
+
+function renderTimelineInsights(muscle, volPts, weightPts, musclePts, fatPts) {
+  const el = document.getElementById('timeline-insights');
+  if (!el) return;
+
+  const insights = [];
+
+  // 볼륨 추이
+  if (volPts.length >= 2) {
+    const first = volPts[0].val, last = volPts[volPts.length-1].val;
+    const chg = ((last-first)/first*100).toFixed(1);
+    if (chg > 5)
+      insights.push({ type:'good', text:`✅ ${muscle} 볼륨이 ${chg}% 증가했습니다. 꾸준한 과부하가 적용되고 있습니다.` });
+    else if (chg < -5)
+      insights.push({ type:'warn', text:`⚠️ ${muscle} 볼륨이 ${Math.abs(chg)}% 감소했습니다. 디로드 또는 피로 누적을 확인하세요.` });
+    else
+      insights.push({ type:'info', text:`ℹ️ ${muscle} 볼륨이 비슷하게 유지되고 있습니다. 중량 또는 세트 수 증가를 시도해보세요.` });
+  }
+
+  // 볼륨 ↑ + 골격근 ↑ → 최고 조합
+  if (volPts.length >= 2 && musclePts.length >= 2) {
+    const volUp = volPts[volPts.length-1].val > volPts[0].val;
+    const muscleUp = musclePts[musclePts.length-1].val > musclePts[0].val;
+    const muscleDiff = (musclePts[musclePts.length-1].val - musclePts[0].val).toFixed(1);
+    if (volUp && muscleUp)
+      insights.push({ type:'good', text:`✅ 볼륨 증가 + 골격근량 +${muscleDiff}kg — 운동이 근육 성장으로 이어지고 있습니다.` });
+    else if (volUp && !muscleUp)
+      insights.push({ type:'warn', text:`⚠️ 볼륨은 늘었지만 골격근량 변화가 없습니다. 단백질 섭취와 수면을 점검해보세요.` });
+  }
+
+  // 체지방 ↓ + 볼륨 유지 → 성공적인 컷팅
+  if (volPts.length >= 2 && fatPts.length >= 2) {
+    const fatDown = fatPts[fatPts.length-1].val < fatPts[0].val;
+    const volStable = Math.abs(volPts[volPts.length-1].val - volPts[0].val) / volPts[0].val < 0.1;
+    if (fatDown && volStable) {
+      const fatDiff = (fatPts[0].val - fatPts[fatPts.length-1].val).toFixed(1);
+      insights.push({ type:'good', text:`✅ 체지방 -${fatDiff}% 감소하면서 ${muscle} 볼륨을 유지했습니다. 효과적인 감량입니다.` });
+    }
+  }
+
+  // 체중 증가 + 체지방도 증가 → 주의
+  if (weightPts.length >= 2 && fatPts.length >= 2) {
+    const weightUp = weightPts[weightPts.length-1].val > weightPts[0].val;
+    const fatUp = fatPts[fatPts.length-1].val > fatPts[0].val + 1;
+    if (weightUp && fatUp)
+      insights.push({ type:'warn', text:`⚠️ 체중과 체지방률이 함께 증가했습니다. 칼로리 섭취량과 유산소 운동을 점검해보세요.` });
+  }
+
+  if (!insights.length) {
+    el.innerHTML = '';
+    return;
+  }
+
+  el.innerHTML = insights.map(ins =>
+    `<div class="insight-card ${ins.type}">
+      <div class="insight-text">${ins.text}</div>
+    </div>`
+  ).join('');
+}
+
+
+// ==================== 피드백 고도화 — 통합 분석 인사이트 ====================
+
+function renderAdvancedInsights() {
+  const el = document.getElementById('advanced-insight-panel');
+  if (!el) return;
+
+  const profile   = JSON.parse(localStorage.getItem('fitcore_profile') || '{}');
+  const bodyLogs  = JSON.parse(localStorage.getItem('fitcore_bodycomp') || '[]');
+  const latest    = bodyLogs[0];
+  const prevBody  = bodyLogs[1];
+  const ALL_MUSCLES = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+
+  if (sessions.length < 2) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px 0;">세션 2개 이상 저장하면 분석이 시작됩니다</div>';
+    return;
+  }
+
+  const insights = [];
+
+  // ── 1. 부위별 볼륨 목표 달성률 × 체성분 변화 교차 분석 ──
+  if (latest?.muscle && prevBody?.muscle) {
+    const muscleGain = latest.muscle - prevBody.muscle;
+    const weekSets = calcMuscleSetsByWeek(0);
+    const hitCount = ALL_MUSCLES.filter(m =>
+      weekSets[m] >= (MUSCLE_VOLUME_GOALS[m]?.min || 0)
+    ).length;
+    const total = ALL_MUSCLES.length;
+
+    if (muscleGain > 0.3 && hitCount >= total * 0.7) {
+      insights.push({
+        type: 'good', icon: '💪', title: '근육 성장 최적 조건 달성',
+        body: `골격근량 <b>+${muscleGain.toFixed(1)}kg</b> 증가했고 ${hitCount}/${total} 부위 볼륨 목표를 달성했습니다. 현재 루틴이 효과적으로 작동하고 있습니다.`,
+        metrics: [
+          { label: '골격근 증가', val: `+${muscleGain.toFixed(1)}kg`, color: 'var(--accent)' },
+          { label: '목표 달성 부위', val: `${hitCount}/${total}`, color: 'var(--accent)' },
+        ]
+      });
+    } else if (muscleGain <= 0 && hitCount >= total * 0.7) {
+      insights.push({
+        type: 'warn', icon: '⚠️', title: '볼륨은 충분하지만 근육 성장 정체',
+        body: `${hitCount}개 부위 볼륨 목표를 달성했지만 골격근량이 증가하지 않았습니다. <b>단백질 섭취량</b>과 <b>수면 품질</b>을 점검해보세요. 1일 단백질 권장량은 체중 × 1.6~2.2g입니다.`,
+        metrics: [
+          { label: '골격근 변화', val: `${muscleGain.toFixed(1)}kg`, color: '#f5a742' },
+          { label: '달성 부위', val: `${hitCount}/${total}`, color: 'var(--accent)' },
+        ]
+      });
+    }
+  }
+
+  // ── 2. 부위 불균형 경고 ──
+  const weekSets = calcMuscleSetsByWeek(0);
+  const lowMuscles = ALL_MUSCLES.filter(m => weekSets[m] < (MUSCLE_VOLUME_GOALS[m]?.min || 0) * 0.5 && weekSets[m] >= 0);
+  const overMuscles = ALL_MUSCLES.filter(m => weekSets[m] > (MUSCLE_VOLUME_GOALS[m]?.max || 20));
+
+  if (lowMuscles.length >= 2) {
+    insights.push({
+      type: 'alert', icon: '🔴', title: `${lowMuscles.join(' · ')} 볼륨 심각하게 부족`,
+      body: `해당 부위들이 권장 세트 수의 50% 미만입니다. 부위 불균형은 부상 위험을 높이고 전체적인 성장을 저해합니다. Weak Day를 활용해 보완하세요.`,
+      metrics: lowMuscles.map(m => ({
+        label: m, val: `${weekSets[m] || 0}세트 / 목표 ${MUSCLE_VOLUME_GOALS[m]?.min}+`, color: '#f54242'
+      }))
+    });
+  }
+
+  if (overMuscles.length > 0) {
+    insights.push({
+      type: 'warn', icon: '⚡', title: `${overMuscles.join(' · ')} 볼륨 과잉`,
+      body: `권장 최대 세트를 초과했습니다. 과훈련은 회복을 방해하고 부상 위험을 높입니다. 볼륨을 줄이고 강도를 높이는 방향을 고려해보세요.`,
+      metrics: overMuscles.map(m => ({
+        label: m, val: `${weekSets[m]}세트 / 최대 ${MUSCLE_VOLUME_GOALS[m]?.max}`, color: '#f5a742'
+      }))
+    });
+  }
+
+  // ── 3. 체중 변화 × 볼륨 변화 교차 분석 ──
+  if (latest?.weight && prevBody?.weight) {
+    const weightChange = latest.weight - prevBody.weight;
+    const recentVols = ALL_MUSCLES.map(m => {
+      const ms = getMuscleSessions(m);
+      if (ms.length < 2) return 0;
+      const last2 = ms.slice(-2);
+      return (calcAnalValue(last2[1],'vol',m) - calcAnalValue(last2[0],'vol',m)) / (calcAnalValue(last2[0],'vol',m)||1) * 100;
+    }).filter(v => v !== 0);
+    const avgVolChange = recentVols.length
+      ? recentVols.reduce((a,b)=>a+b,0)/recentVols.length : 0;
+
+    if (weightChange > 1 && avgVolChange > 3) {
+      insights.push({
+        type: 'good', icon: '📈', title: '체중 증가 + 볼륨 증가 — 린매스 가능성',
+        body: `체중이 <b>+${weightChange.toFixed(1)}kg</b> 늘었고 전체 볼륨도 평균 <b>+${avgVolChange.toFixed(1)}%</b> 증가했습니다. 골격근량을 함께 기록하면 근육인지 지방인지 구분할 수 있습니다.`,
+        metrics: [
+          { label: '체중 변화', val: `+${weightChange.toFixed(1)}kg`, color: 'var(--accent)' },
+          { label: '볼륨 변화', val: `+${avgVolChange.toFixed(1)}%`, color: 'var(--accent)' },
+        ]
+      });
+    } else if (weightChange < -0.5 && avgVolChange < -5) {
+      insights.push({
+        type: 'warn', icon: '⚠️', title: '체중 감소 + 볼륨 감소 주의',
+        body: `체중 <b>${weightChange.toFixed(1)}kg</b> 감소와 함께 볼륨도 줄었습니다. 감량 중 근손실이 발생할 수 있습니다. 단백질 섭취를 늘리고 볼륨을 유지해보세요.`,
+        metrics: [
+          { label: '체중 변화', val: `${weightChange.toFixed(1)}kg`, color: '#f5a742' },
+          { label: '볼륨 변화', val: `${avgVolChange.toFixed(1)}%`, color: '#f54242' },
+        ]
+      });
+    }
+  }
+
+  // ── 4. 1RM 성장 분석 ──
+  const rmGrowths = ALL_MUSCLES.map(m => {
+    const ms = getMuscleSessions(m);
+    if (ms.length < 3) return null;
+    const first = calcAnalValue(ms[0], 'rm', m);
+    const last  = calcAnalValue(ms[ms.length-1], 'rm', m);
+    if (!first) return null;
+    return { muscle: m, pct: ((last-first)/first*100), first, last };
+  }).filter(Boolean);
+
+  const strongGrowth = rmGrowths.filter(r => r.pct >= 5);
+  const declining    = rmGrowths.filter(r => r.pct < -3);
+
+  if (strongGrowth.length > 0) {
+    insights.push({
+      type: 'good', icon: '🏋️', title: `근력 성장 감지 — ${strongGrowth.map(r=>r.muscle).join(' · ')}`,
+      body: `추정 1RM이 유의미하게 상승했습니다. 신경계 적응과 근육 성장이 동시에 이루어지고 있습니다.`,
+      metrics: strongGrowth.map(r => ({
+        label: r.muscle, val: `${r.first}→${r.last}kg (+${r.pct.toFixed(1)}%)`, color: 'var(--accent)'
+      }))
+    });
+  }
+
+  if (declining.length > 0) {
+    insights.push({
+      type: 'warn', icon: '📉', title: `근력 감소 감지 — ${declining.map(r=>r.muscle).join(' · ')}`,
+      body: `추정 1RM이 감소했습니다. 과훈련, 수면 부족, 영양 부족 중 하나일 수 있습니다. 해당 부위에 디로드 주간을 고려해보세요.`,
+      metrics: declining.map(r => ({
+        label: r.muscle, val: `${r.last}kg (${r.pct.toFixed(1)}%)`, color: '#f54242'
+      }))
+    });
+  }
+
+  // ── 5. 회복 × 성과 상관관계 (다음 우선순위 ③ 선행 구현) ──
+  const recoveryInsights = getRecoveryPerformanceInsight();
+  if (recoveryInsights) insights.push(recoveryInsights);
+
+  // ── 6. BMR 기반 칼로리 밸런스 ──
+  const w = parseFloat(profile.weight) || 0;
+  const h = parseFloat(profile.height) || 0;
+  const a = parseInt(profile.age) || 0;
+  const g = profile.gender || '';
+  if (w && h && a && g) {
+    const bmr = g === 'male'
+      ? 10*w + 6.25*h - 5*a + 5
+      : 10*w + 6.25*h - 5*a - 161;
+    const tdee = Math.round(bmr * 1.55);
+    const recentCals = sessions.slice(0,7).map(s => estimateSessionCalories(s));
+    const avgCal = recentCals.reduce((a,b)=>a+b,0) / (recentCals.length||1);
+
+    if (avgCal > 0) {
+      const netCal = tdee + Math.round(avgCal);
+      insights.push({
+        type: 'info', icon: '🔥', title: '칼로리 밸런스 분석',
+        body: `기초대사량 기반 TDEE <b>${tdee.toLocaleString()}kcal</b> + 최근 운동 소모 평균 <b>${Math.round(avgCal).toLocaleString()}kcal</b>. ${
+          latest?.weight && prevBody?.weight
+            ? latest.weight > prevBody.weight
+              ? '체중이 증가 중이므로 잉여 칼로리가 발생하고 있습니다.'
+              : '체중이 감소 중이므로 칼로리 적자 상태입니다.'
+            : '체성분을 기록하면 더 정확한 분석이 가능합니다.'
+        }`,
+        metrics: [
+          { label: 'TDEE', val: `${tdee.toLocaleString()}kcal`, color: '#ff9f43' },
+          { label: '운동 소모(평균)', val: `${Math.round(avgCal).toLocaleString()}kcal`, color: '#ff9f43' },
+        ]
+      });
+    }
+  }
+
+  // 렌더
+  if (!insights.length) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:16px 0;">데이터가 쌓이면 더 정확한 인사이트가 제공됩니다</div>';
+    return;
+  }
+
+  el.innerHTML = insights.map(ins => `
+    <div class="adv-insight-card ${ins.type}">
+      <div class="adv-insight-header">
+        <span class="adv-insight-icon">${ins.icon}</span>
+        <span class="adv-insight-title">${ins.title}</span>
+      </div>
+      <div class="adv-insight-body">${ins.body}</div>
+      ${ins.metrics?.length ? `
+        <div class="adv-insight-metric">
+          ${ins.metrics.map(m => `
+            <span class="adv-metric-chip" style="color:${m.color};border-color:${m.color}44;">
+              ${m.label}: ${m.val}
+            </span>`).join('')}
+        </div>` : ''}
+    </div>`).join('');
+}
+
+// ── 회복 × 성과 상관관계 (③ 선행 구현) ──
+function getRecoveryPerformanceInsight() {
+  // 각 세션에서 마지막 같은부위 세션과의 간격 vs 볼륨 변화
+  const ALL_MUSCLES = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+  const results = [];
+
+  ALL_MUSCLES.forEach(m => {
+    const ms = getMuscleSessions(m);
+    if (ms.length < 3) return;
+
+    const pairs = [];
+    for (let i = 1; i < ms.length; i++) {
+      const gap = Math.floor(
+        (new Date(ms[i].date) - new Date(ms[i-1].date)) / (1000*60*60*24)
+      );
+      const volChange = calcAnalValue(ms[i],'vol',m) - calcAnalValue(ms[i-1],'vol',m);
+      pairs.push({ gap, volChange });
+    }
+
+    const shortRest = pairs.filter(p => p.gap <= 2);
+    const longRest  = pairs.filter(p => p.gap >= 3);
+    if (shortRest.length < 1 || longRest.length < 1) return;
+
+    const shortAvg = shortRest.reduce((s,p)=>s+p.volChange,0)/shortRest.length;
+    const longAvg  = longRest.reduce((s,p)=>s+p.volChange,0)/longRest.length;
+
+    if (longAvg - shortAvg > 500) {
+      results.push({ muscle: m, shortAvg, longAvg, diff: longAvg - shortAvg });
+    }
+  });
+
+  if (!results.length) return null;
+
+  const best = results.sort((a,b)=>b.diff-a.diff)[0];
+  return {
+    type: 'info', icon: '🛌', title: `${best.muscle} — 충분한 휴식이 성과를 높입니다`,
+    body: `${best.muscle} 데이터 분석 결과, 3일 이상 휴식 후 세션의 볼륨이 2일 이하 휴식 대비 <b>+${Math.round(best.diff).toLocaleString()}kg</b> 더 높습니다. 회복 시간이 운동 품질에 직접 영향을 줍니다.`,
+    metrics: [
+      { label: '2일 이하 휴식', val: `${best.shortAvg >= 0 ? '+' : ''}${Math.round(best.shortAvg)}kg`, color: '#f5a742' },
+      { label: '3일 이상 휴식', val: `${best.longAvg >= 0 ? '+' : ''}${Math.round(best.longAvg)}kg`, color: 'var(--accent)' },
+    ]
+  };
 }
 
 // ==================== 규칙 기반 피드백 (근력·근비대 + 볼륨·1RM 비교) ====================
@@ -5574,7 +6262,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-btn')[tabMap[tab]].classList.add('active');
 
   if (tab === 'history') { renderHistory(); }
-  if (tab === 'feedback') { migrateSessionsToMuscles(); renderMetrics(); renderAnalMetricCards(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); renderMuscleVolumePanel(); renderMuscleTrendChart(); }
+  if (tab === 'feedback') { migrateSessionsToMuscles(); renderMetrics(); renderAnalMetricCards(); initTimelineFilter(); renderTimelineChart(); renderAdvancedInsights(); renderPR(); renderVolumeChart(); initRMSelect(); renderBalancePanel(); renderRestPanel(); renderMuscleVolumePanel(); renderMuscleTrendChart(); }
 }
 
 function openCurrentGuide() {
