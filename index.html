@@ -218,7 +218,7 @@
 
   .set-header {
     display: grid;
-    grid-template-columns: 48px 1fr 1fr 36px 36px;
+    grid-template-columns: 48px 1fr 1fr 40px;
     gap: 8px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
@@ -232,7 +232,7 @@
 
   .set-row {
     display: grid;
-    grid-template-columns: 48px 1fr 1fr 36px 36px;
+    grid-template-columns: 48px 1fr 1fr 40px;
     gap: 8px;
     align-items: center;
     margin-bottom: 8px;
@@ -819,7 +819,7 @@
     .history-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
 
     .set-header,
-    .set-row { grid-template-columns: 40px 1fr 1fr 32px 32px; }
+    .set-row { grid-template-columns: 40px 1fr 1fr 36px; }
 
     .add-exercise-area { flex-direction: column; align-items: stretch; }
     .btn-save-session { margin-left: 0; }
@@ -868,7 +868,7 @@
 
     .set-table { padding: 12px 14px; }
     .set-header,
-    .set-row { grid-template-columns: 36px 1fr 1fr 28px 28px; gap: 5px; }
+    .set-row { grid-template-columns: 36px 1fr 1fr 30px; gap: 6px; }
     .set-header { font-size: 10px; }
     .set-label { font-size: 11px; }
     .set-row input { padding: 8px 6px; font-size: 13px; }
@@ -997,47 +997,13 @@
   }
   .compare-no-prev .no-prev-icon { font-size: 36px; margin-bottom: 12px; }
 
-  .goal-section-title {
-    font-size: 12px; color: var(--text3); text-transform: uppercase;
-    letter-spacing: 1px; margin-bottom: 10px;
-  }
 
-  .goal-cards {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-  }
 
-  .goal-card {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px 12px;
-    cursor: pointer; transition: all 0.2s;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    text-align: center;
-  }
 
-  .goal-card:hover { border-color: var(--text3); transform: translateY(-1px); }
 
-  .goal-card-icon { font-size: 22px; line-height: 1; }
 
-  .goal-card-name {
-    font-size: 13px; font-weight: 700; color: var(--text);
-  }
 
-  .goal-card-desc {
-    font-size: 10px; color: var(--text3); line-height: 1.4;
-  }
   /* ====== 피드백 섹션 ====== */
-  .goal-feedback-section {
-    margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px;
-  }
-  .goal-feedback-title {
-    font-size: 11px; font-weight: 700; color: var(--text2);
-    letter-spacing: 0.5px; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .goal-feedback-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent); display: inline-block; flex-shrink: 0;
-  }
   .feedback-block {
     border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
   }
@@ -1445,51 +1411,8 @@
     border: 1px solid var(--border);
   }
 
-  /* 휴식 타이머 */
-  .rest-timer-bar {
-    position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 14px; padding: 10px 18px;
-    display: flex; align-items: center; gap: 12px;
-    z-index: 500; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    opacity: 0; pointer-events: none; transition: opacity 0.25s;
-    min-width: 220px;
-  }
-  .rest-timer-bar.show { opacity: 1; pointer-events: auto; }
-  .rest-timer-icon { font-size: 18px; }
-  .rest-timer-count {
-    font-family: 'Bebas Neue', sans-serif; font-size: 26px;
-    letter-spacing: 2px; color: var(--accent); min-width: 52px;
-  }
-  .rest-timer-count.warning { color: #f5a742; }
-  .rest-timer-count.urgent  { color: #f54242; }
-  .rest-timer-label { font-size: 10px; color: var(--text3); }
-  .rest-timer-skip {
-    margin-left: auto; background: none; border: 1px solid var(--border);
-    color: var(--text3); border-radius: 8px; padding: 4px 10px;
-    font-size: 11px; cursor: pointer; font-family: inherit;
-    transition: all 0.15s;
-  }
-  .rest-timer-skip:hover { border-color: var(--text2); color: var(--text2); }
-  .btn-set-done {
-    background: none; border: 1px solid var(--border);
-    color: var(--text3); border-radius: 6px; padding: 0 8px;
-    font-size: 14px; cursor: pointer; transition: all 0.15s;
-    line-height: 32px; height: 32px;
-  }
-  .btn-set-done:hover  { border-color: var(--accent); color: var(--accent); }
-  .btn-set-done.done   { border-color: var(--accent); color: var(--accent);
-                          background: rgba(200,245,66,0.1); }
 
   /* GOAL CARD 개선 */
-  .goal-card-guide {
-    font-size: 9px; color: var(--text3); line-height: 1.5;
-    background: rgba(255,255,255,0.03); border-radius: 6px;
-    padding: 5px 6px; margin-top: 4px; width: 100%; text-align: left;
-  }
-  .goal-card.active-bulk .goal-card-guide { color: rgba(245,167,66,0.7); }
-  .goal-card.active-diet .goal-card-guide { color: rgba(66,197,245,0.7); }
-  .goal-card.active-lean .goal-card-guide { color: rgba(200,245,66,0.7); }
 
   /* 개인 프로필 섹션 */
   .profile-section {
@@ -1528,28 +1451,11 @@
   }
 
 
-  .goal-card.active-bulk {
-    border-color: #f5a742; background: rgba(245,167,66,0.08);
-  }
-  .goal-card.active-bulk .goal-card-name { color: #f5a742; }
 
-  .goal-card.active-diet {
-    border-color: #42c5f5; background: rgba(66,197,245,0.08);
-  }
-  .goal-card.active-diet .goal-card-name { color: #42c5f5; }
 
-  .goal-card.active-lean {
-    border-color: var(--accent); background: rgba(200,245,66,0.08);
-  }
-  .goal-card.active-lean .goal-card-name { color: var(--accent); }
 
   @media (max-width: 480px) {
-    .goal-cards { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .goal-card { padding: 12px 8px; }
-    .goal-card-icon { font-size: 18px; }
-    .goal-card-name { font-size: 11px; }
-    .goal-card-desc { display: none; }
-  }
+            }
 
     .nav-btn { padding: 6px 7px; font-size: 10px; }
     .section-title { font-size: 20px; }
@@ -1794,29 +1700,6 @@
     <div class="section-sub">무게와 반복 횟수를 입력하고 세션을 저장하세요</div>
 
     <!-- 목표 선택 -->
-    <div class="goal-section" style="display:none;">
-      <div class="goal-section-title">🎯 운동 목표 선택</div>
-      <div class="goal-cards">
-        <div class="goal-card active-bulk" id="goal-btn-bulk" onclick="setGoal('bulk')">
-          <div class="goal-card-icon">🏋️</div>
-          <div class="goal-card-name">벌크업</div>
-          <div class="goal-card-desc">고중량·근비대<br>점진적 과부하</div>
-          <div class="goal-card-guide">3~5세트 · 3~6회<br>1RM의 80~90%</div>
-        </div>
-        <div class="goal-card" id="goal-btn-diet" onclick="setGoal('diet')">
-          <div class="goal-card-icon">🥗</div>
-          <div class="goal-card-name">다이어트</div>
-          <div class="goal-card-desc">칼로리 소모<br>근손실 방지</div>
-          <div class="goal-card-guide">3~4세트 · 12~15회<br>1RM의 60~70%</div>
-        </div>
-        <div class="goal-card" id="goal-btn-lean" onclick="setGoal('lean')">
-          <div class="goal-card-icon">⚡</div>
-          <div class="goal-card-name">린매스업</div>
-          <div class="goal-card-desc">균형 증량<br>체지방 유지</div>
-          <div class="goal-card-guide">3~4세트 · 8~12회<br>1RM의 70~80%</div>
-        </div>
-      </div>
-    </div>
 
     <!-- 개인 프로필 -->
     <div class="profile-section" id="profile-section" style="margin-top:10px;">
@@ -2154,16 +2037,6 @@
 
 </main>
 
-<!-- 휴식 타이머 바 -->
-<div class="rest-timer-bar" id="rest-timer-bar">
-  <span class="rest-timer-icon">🕐</span>
-  <div>
-    <div class="rest-timer-count" id="rest-timer-count">1:30</div>
-    <div class="rest-timer-label">세트 간 휴식</div>
-  </div>
-  <button class="rest-timer-skip" onclick="skipRestTimer()">건너뛰기 ✕</button>
-</div>
-
 <!-- SESSION DETAIL MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
   <div class="modal" id="modal-content"></div>
@@ -2226,7 +2099,6 @@ let sessions = JSON.parse(localStorage.getItem('fitcore_sessions') || '[]');
 let currentExercises = [];
 let exerciseCounter = 0;
 let currentDayType = 'workout';
-let currentGoal = localStorage.getItem('fitcore_goal') || 'bulk';
 let currentTab = 'record';
 let editSession = null;
 let compareModeOn = false;
@@ -2262,7 +2134,7 @@ const EXERCISES_DB = {
     '밀리터리 프레스','아놀드 프레스','케이블 레터럴',
   ],
   'Legs':    [
-    '스쿼트','핵 스쿼트','핵스쿼트','스미스 스쿼트','불가리안 스플릿 스쿼트','불가리안',
+    '스쿼트','V 스쿼트','V스쿼트','핵 스쿼트','핵스쿼트','스미스 스쿼트','불가리안 스플릿 스쿼트','불가리안',
     '레그프레스','레그 프레스','레그 익스텐션','레그익스텐션','레그 컬','레그컬',
     '런지','덤벨 런지','바벨 런지','힙스러스트','힙 쓰러스트','힙쓰러스트',
     '카프레이즈','카프 레이즈','힙 어브덕터','힙어브덕터','이너타이','레그레이즈',
@@ -2429,8 +2301,6 @@ document.addEventListener('DOMContentLoaded', () => {
   migrateSessionsRestTime();  // 기존 세션 휴식시간 설정
   buildMetricsTabBar();
   setToday();
-  renderQuickChips();
-  initGoal();
   loadProfile();
   renderBodyComp();
   initDayType();
@@ -2458,19 +2328,7 @@ function setToday() {
 }
 
 // ==================== QUICK CHIPS ====================
-const GOAL_QUICK_EXERCISES = {
-  bulk: ['벤치프레스', '스쿼트', '데드리프트', '오버헤드 프레스', '바벨 로우', '딥스', '풀업'],
-  diet: ['런지', '케이블 플라이', '레그프레스', '랫풀다운', '사이드 레터럴 레이즈', '레그컬', '바벨컬'],
-  lean: ['벤치프레스', '스쿼트', '풀업', '런지', '오버헤드 프레스', '바벨 로우', '데드리프트'],
-};
 
-function renderQuickChips() {
-  const exercises = GOAL_QUICK_EXERCISES[currentGoal] || GOAL_QUICK_EXERCISES.bulk;
-  const container = document.getElementById('quick-chips');
-  container.innerHTML = exercises.map(ex =>
-    `<span class="chip" onclick="addExerciseNamed('${ex}')">${ex}</span>`
-  ).join('');
-}
 
 // ==================== EXERCISE CARD ====================
 function addExercise(name = '') {
@@ -2653,24 +2511,14 @@ function autoDetectFocusWithRest(sets, restSecs) {
   if (!validSets.length) return '';
   const avgReps = validSets.reduce((sum, s) => sum + parseInt(s.reps), 0) / validSets.length;
 
-  // restSecs가 있으면 reps × 휴식 교차 분류
-  if (restSecs) {
-    // 근력: 낮은 reps + 긴 휴식
-    if (avgReps <= 6 && restSecs >= 150) return 'strength';
-    // 근비대: 중간 reps + 중간 휴식
-    if (avgReps >= 6 && avgReps <= 12 && restSecs >= 60 && restSecs <= 150) return 'hypertrophy';
-    // 대사 스트레스: 짧은 휴식
-    if (restSecs < 60) return 'hypertrophy'; // 짧은 휴식도 근비대 자극
-    // reps만으로 판단
-    if (avgReps <= 7) return 'strength';
-    if (avgReps <= 12) return 'hypertrophy';
-    return '';
-  }
+  // 8회 이상은 무조건 근비대
+  if (avgReps >= 8) return 'hypertrophy';
 
-  // restSecs 없을 때 — reps만으로 판단 (기존 방식)
-  if (avgReps <= 7)  return 'strength';
-  if (avgReps <= 12) return 'hypertrophy';
-  return '';
+  // 7회 이하: 근력 기본
+  // 단, 휴식이 매우 짧으면(60초 미만) 근비대 자극으로 분류
+  if (restSecs && restSecs < 75) return 'hypertrophy';
+
+  return 'strength';
 }
 
 function renderExerciseList() {
@@ -2700,7 +2548,7 @@ function renderExerciseList() {
           <div>세트</div>
           <div>무게 (kg)</div>
           <div>횟수 (reps)</div>
-          <div>✓</div>
+          <div></div>
         </div>
         <div id="sets-${exIdx}">
           ${ex.sets.map((set, setIdx) => renderSetRow(exIdx, setIdx, set)).join('')}
@@ -2710,17 +2558,21 @@ function renderExerciseList() {
         <button class="btn-add-set" onclick="addSet(${exIdx})">+ 세트 추가</button>
       </div>
       <div class="auto-focus-badge" style="padding:6px 14px 8px;border-top:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:8px;">
-        ${ex.focus === 'strength' ? '<span style="font-size:10px;color:#f5a742;font-weight:700;">💪 근력</span>' : ex.focus === 'hypertrophy' ? '<span style="font-size:10px;color:#c8f542;font-weight:700;">🔥 근비대</span>' : '<span style="font-size:10px;color:var(--text3);">—</span>'}
+        ${ex.focus === 'strength' ? '<span class="focus-label" style="font-size:10px;color:#f5a742;font-weight:700;">💪 근력</span>' : ex.focus === 'hypertrophy' ? '<span class="focus-label" style="font-size:10px;color:#c8f542;font-weight:700;">🔥 근비대</span>' : '<span class="focus-label" style="font-size:10px;color:var(--text3);">—</span>'}
         <span style="font-size:9px;color:var(--text3);">자동분류</span>
         <span style="margin-left:auto;display:flex;align-items:center;gap:5px;">
-          <span style="font-size:9px;color:var(--text3);">🕐 세트 간 휴식</span>
-          <select style="appearance:none;-webkit-appearance:none;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;outline:none;"
+          <span style="font-size:9px;color:var(--text3);">🕐 휴식</span>
+          <select style="appearance:none;-webkit-appearance:none;
+            background:var(--surface2);color:var(--accent);
+            border:1px solid rgba(200,245,66,0.3);border-radius:8px;
+            padding:3px 10px;font-size:10px;font-weight:700;
+            cursor:pointer;outline:none;font-family:'Noto Sans KR',sans-serif;"
             onchange="updateExerciseRest(${exIdx}, parseInt(this.value))">
-            ${[60,90,120,150,180,240,300].map(s => {
-              const label = s < 60 ? s+'초' : s % 60 === 0 ? (s/60)+'분' : Math.floor(s/60)+'분 '+(s%60)+'초';
+            ${[60,75,90,120,150,180,210,240,300].map(s => {
+              const m = Math.floor(s/60), sec = s%60;
+              const label = sec === 0 ? m+'분' : m > 0 ? m+'분 '+sec+'초' : sec+'초';
               const curRest = ex.restSecs || calcAutoRestSecs(ex);
-              const sel = curRest === s ? 'selected' : '';
-              return '<option value="' + s + '" ' + sel + '>' + label + '</option>';
+              return '<option value="' + s + '"' + (curRest === s ? ' selected' : '') + '>' + label + '</option>';
             }).join('')}
           </select>
         </span>
@@ -2774,75 +2626,12 @@ function renderSetRow(exIdx, setIdx, set) {
           onblur="saveDraft()">
         <span class="input-unit">회</span>
       </div>
-      <button class="btn-set-done" id="done-${exIdx}-${setIdx}" onclick="onSetDone(${exIdx}, ${setIdx})">✓</button>
       <button class="btn-del-set" onclick="deleteSet(${exIdx}, ${setIdx})">✕</button>
     </div>
   `;
 }
 
 
-
-// ==================== 세트 간 휴식 타이머 ====================
-let _restTimer = null;
-let _restRemain = 0;
-
-function onSetDone(exIdx, setIdx) {
-  // 버튼 완료 표시
-  const btn = document.getElementById(`done-${exIdx}-${setIdx}`);
-  if (btn) btn.classList.add('done');
-
-  // 종목의 restSecs 가져오기
-  const ex = currentExercises[exIdx];
-  const restSecs = ex?.restSecs || 90;
-
-  startRestTimer(restSecs);
-}
-
-function startRestTimer(secs) {
-  // 기존 타이머 초기화
-  if (_restTimer) { clearInterval(_restTimer); _restTimer = null; }
-
-  _restRemain = secs;
-  const bar   = document.getElementById('rest-timer-bar');
-  const count = document.getElementById('rest-timer-count');
-  if (!bar || !count) return;
-
-  bar.classList.add('show');
-
-  const updateDisplay = () => {
-    const m = Math.floor(_restRemain / 60);
-    const s = _restRemain % 60;
-    count.textContent = `${m}:${String(s).padStart(2,'0')}`;
-    // 색상 변화
-    count.className = 'rest-timer-count' +
-      (_restRemain <= 10 ? ' urgent' : _restRemain <= 20 ? ' warning' : '');
-  };
-
-  updateDisplay();
-
-  _restTimer = setInterval(() => {
-    _restRemain--;
-    if (_restRemain <= 0) {
-      clearInterval(_restTimer);
-      _restTimer = null;
-      count.textContent = '0:00';
-      // 진동 알림
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      // 1초 후 바 숨김
-      setTimeout(() => {
-        bar.classList.remove('show');
-      }, 1500);
-    } else {
-      updateDisplay();
-    }
-  }, 1000);
-}
-
-function skipRestTimer() {
-  if (_restTimer) { clearInterval(_restTimer); _restTimer = null; }
-  const bar = document.getElementById('rest-timer-bar');
-  if (bar) bar.classList.remove('show');
-}
 
 function updateExerciseRest(exIdx, secs) {
   currentExercises[exIdx].restSecs = secs;
@@ -2863,11 +2652,20 @@ function updateSet(exIdx, setIdx, field, val) {
       if (card) {
         const badge = card.querySelector('.auto-focus-badge');
         if (badge) {
-          badge.innerHTML = detected === 'strength'
-            ? '<span style="font-size:10px;color:#f5a742;font-weight:700;">💪 근력</span>'
+          // 배지 텍스트만 업데이트 (휴식시간 드롭다운 보존)
+          const focusSpan = badge.querySelector('.focus-label');
+          const focusHtml = detected === 'strength'
+            ? '<span class="focus-label" style="font-size:10px;color:#f5a742;font-weight:700;">💪 근력</span>'
             : detected === 'hypertrophy'
-            ? '<span style="font-size:10px;color:#c8f542;font-weight:700;">🔥 근비대</span>'
-            : '<span style="font-size:10px;color:var(--text3);">—</span>';
+            ? '<span class="focus-label" style="font-size:10px;color:#c8f542;font-weight:700;">🔥 근비대</span>'
+            : '<span class="focus-label" style="font-size:10px;color:var(--text3);">—</span>';
+          if (focusSpan) {
+            focusSpan.outerHTML = focusHtml;
+          } else {
+            // focusSpan 없으면 첫 번째 span 교체
+            const firstSpan = badge.querySelector('span');
+            if (firstSpan) firstSpan.outerHTML = focusHtml;
+          }
         }
       }
     }
@@ -3560,7 +3358,7 @@ function showCompareModal(newSession) {
           <span class="goal-feedback-dot"></span>
           피드백
         </div>
-        <div id="goal-feedback-content"></div>
+        
       </div>
     `;
     overlay.classList.add('show');
@@ -3614,8 +3412,7 @@ function showCompareModal(newSession) {
         <span class="goal-feedback-dot"></span>
         피드백
       </div>
-      <div id="goal-feedback-content-2"</div>
-    </div>
+      
   `;
 
   overlay.classList.add('show');
@@ -4871,7 +4668,6 @@ const GOAL_INFO = {
 function setGoal(goal) {
   if (goal === currentGoal) return;
   currentGoal = goal;
-  localStorage.setItem('fitcore_goal', currentGoal);
 
   ['bulk','diet','lean'].forEach(g => {
     const card = document.getElementById(`goal-btn-${g}`);
@@ -4879,7 +4675,6 @@ function setGoal(goal) {
     card.className = 'goal-card' + (g === currentGoal ? ` active-${g}` : '');
   });
 
-  renderQuickChips();
   updateProfileBMI();
   const info = GOAL_INFO[currentGoal];
   showToast(`✅ 목표 변경: ${info.label}`);
@@ -5007,8 +4802,7 @@ function showManualCompareModal(prevSession, newSession) {
         <span class="goal-feedback-dot"></span>
         피드백
       </div>
-      <div id="goal-feedback-content-3"</div>
-    </div>
+      
   `;
 
   overlay.classList.add('show');
@@ -5240,11 +5034,10 @@ function renderMuscleTrendChart() {
 let analCurrentMetric = 'vol'; // vol | lo | cal | rm
 
 const ANAL_METRICS = [
-  { id:'vol',  name:'총 볼륨',          icon:'📊', color:'#c8f542', unit:'kg'  },
-  { id:'lo',   name:'점진적 과부하',    icon:'🔄', color:'#42c5f5', unit:'%'   },
-  { id:'cal',  name:'예상 소모 칼로리', icon:'🔥', color:'#ff9f43', unit:'kcal'},
-  { id:'rm',   name:'운동 강도 (1RM)',  icon:'⚡', color:'#f54242', unit:'kg'  },
-  { id:'rest', name:'평균 휴식시간',    icon:'🕐', color:'#c8a0ff', unit:'초'  },
+  { id:'vol', name:'총 볼륨',          icon:'📊', color:'#c8f542', unit:'kg'  },
+  { id:'lo',  name:'점진적 과부하',    icon:'🔄', color:'#42c5f5', unit:'%'   },
+  { id:'cal', name:'예상 소모 칼로리', icon:'🔥', color:'#ff9f43', unit:'kcal'},
+  { id:'rm',  name:'운동 강도 (1RM)',  icon:'⚡', color:'#f54242', unit:'kg'  },
 ];
 
 // 부위별 세션에서 지표값 계산
@@ -5421,40 +5214,9 @@ function renderAnalMetricCards() {
         changeHtml = `<div class="amc-change amc-neutral">직전 세션 필요</div>`;
       }
     } else {
-      if (m.id === 'rest') {
-        // 휴식시간: restSecs 없으면 자동 계산 후 표시
-        let rs = Math.round(val);
-        if (rs === 0) {
-          // 직접 계산
-          const exList2 = (last.exercises||[]);
-          const rv = exList2.map(ex => ex.restSecs || calcAutoRestSecs(ex)).filter(v=>v>0);
-          rs = rv.length ? Math.round(rv.reduce((a,b)=>a+b,0)/rv.length) : 0;
-        }
-        displayVal = rs > 0
-          ? (rs >= 60 ? Math.floor(rs/60)+'분' + (rs%60>0?' '+(rs%60)+'초':'') : rs+'초')
-          : '—';
-        // 변화량도 휴식시간 기반
-        if (prev && rs > 0) {
-          const pExList = (prev.exercises||[]);
-          const prv2 = pExList.map(ex=>ex.restSecs||calcAutoRestSecs(ex)).filter(v=>v>0);
-          const pRs = prv2.length ? Math.round(prv2.reduce((a,b)=>a+b,0)/prv2.length) : 0;
-          if (pRs > 0) {
-            const diff = rs - pRs;
-            const sign = diff > 0 ? '+' : '';
-            const cls = diff < 0 ? 'amc-up' : diff > 0 ? 'amc-down' : 'amc-neutral';
-            const note = diff < 0 ? '강도 향상' : diff > 0 ? '회복 중시' : '유지';
-            changeHtml = `<div class="amc-change ${cls}">${sign}${diff}초 (${note})</div>`;
-          } else {
-            changeHtml = `<div class="amc-change amc-neutral">직전 세션 비교</div>`;
-          }
-        } else {
-          changeHtml = `<div class="amc-change amc-neutral">첫 번째 세션</div>`;
-        }
-      } else {
-        displayVal = m.id === 'vol' || m.id === 'cal'
-          ? Math.round(val).toLocaleString()
-          : Math.round(val).toString();
-      }
+      displayVal = m.id === 'vol' || m.id === 'cal'
+        ? Math.round(val).toLocaleString()
+        : Math.round(val).toString();
 
       if (prev && prevVal) {
         const diff = val - prevVal;
@@ -5515,13 +5277,6 @@ function renderAnalChart(muscle, muscleSessions) {
       if (cur === 0) cur = totalVol(s);
       if (prv === 0) prv = totalVol(muscleSessions[i-1]);
       val = prv > 0 ? parseFloat(((cur - prv) / prv * 100).toFixed(2)) : 0;
-    } else if (metric.id === 'rest') {
-      // 휴식시간: restSecs 없으면 calcAutoRestSecs로 계산
-      const exList = (s.exercises||[]).filter(ex =>
-        resolveExerciseMuscle(ex) === muscle || (s.muscles||[]).includes(muscle)
-      );
-      const restVals = exList.map(ex => ex.restSecs || calcAutoRestSecs(ex)).filter(v=>v>0);
-      val = restVals.length ? Math.round(restVals.reduce((a,b)=>a+b,0)/restVals.length) : 0;
     } else {
       val = calcAnalValue(s, metric.id, muscle);
     }
@@ -5561,8 +5316,6 @@ function renderAnalChart(muscle, muscleSessions) {
     const y = toY(v);
     const lbl = metric.id === 'lo'
       ? (v>=0?'+':'')+v.toFixed(1)+'%'
-      : metric.id === 'rest'
-      ? (Math.round(v)>=60 ? Math.floor(Math.round(v)/60)+'m' : Math.round(v)+'s')
       : metric.id === 'vol' || metric.id === 'cal'
       ? Math.round(v).toLocaleString()
       : Math.round(v)+'kg';
@@ -5576,6 +5329,36 @@ function renderAnalChart(muscle, muscleSessions) {
   const zeroLine = metric.id === 'lo' && domMin < 0 && domMax > 0
     ? `<line x1="${PAD.left}" y1="${toY(0)}" x2="${W-PAD.right}" y2="${toY(0)}"
         stroke="#555568" stroke-width="1" stroke-dasharray="4,3"/>` : '';
+
+  // PR 기준선 (rm 그래프에서만)
+  let prLine = '';
+  if (metric.id === 'rm') {
+    // 해당 부위 최고 PR 계산
+    const musclePR = (() => {
+      let maxRM = 0;
+      muscleSessions.forEach(s => {
+        (s.exercises||[]).filter(ex => resolveExerciseMuscle(ex) === muscle)
+          .forEach(ex => {
+            ex.sets.forEach(set => {
+              const w = parseFloat(set.weight||0), r = parseInt(set.reps||0);
+              if (w > 0 && r > 0) {
+                const rm = r === 1 ? w : Math.round(w*(1+r/30));
+                if (rm > maxRM) maxRM = rm;
+              }
+            });
+          });
+      });
+      return maxRM;
+    })();
+    if (musclePR > 0 && musclePR >= domMin && musclePR <= domMax) {
+      const prY = toY(musclePR);
+      prLine = `
+        <line x1="${PAD.left}" y1="${prY}" x2="${W-PAD.right}" y2="${prY}"
+          stroke="#f5a742" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.8"/>
+        <text x="${W-PAD.right+4}" y="${prY+4}" font-size="9"
+          fill="#f5a742" font-weight="700">PR</text>`;
+    }
+  }
 
   // X 레이블
   const xLabels = validPts.map((d, i) => {
@@ -5598,8 +5381,6 @@ function renderAnalChart(muscle, muscleSessions) {
     const isLast = i === n-1;
     const lbl = metric.id === 'lo'
       ? (d.val>=0?'+':'')+d.val.toFixed(1)+'%'
-      : metric.id === 'rest'
-      ? (Math.round(d.val)>=60 ? Math.floor(Math.round(d.val)/60)+'분'+(Math.round(d.val)%60>0?' '+Math.round(d.val)%60+'초':'') : Math.round(d.val)+'초')
       : metric.id === 'vol' || metric.id === 'cal'
       ? Math.round(d.val).toLocaleString()+metric.unit
       : Math.round(d.val)+metric.unit;
@@ -5636,6 +5417,7 @@ function renderAnalChart(muscle, muscleSessions) {
         </defs>
         ${yGrid}
         ${zeroLine}
+        ${prLine}
         ${xLabels}
         <polygon points="${areaPts}" fill="url(#${gid})"/>
         <polyline points="${linePts}" fill="none" stroke="${mCol}"
@@ -6129,6 +5911,100 @@ function renderAdvancedInsights() {
   const restInsights = getRestPatternInsight();
   if (restInsights) insights.push(restInsights);
 
+  // ── 7. 목표체중 진행률 ──
+  const targetW = parseFloat(profile.target) || 0;
+  const targetP = parseInt(profile.period) || 0;
+  const curW    = latest?.weight || parseFloat(profile.weight) || 0;
+  if (targetW && targetP && curW) {
+    const diff     = targetW - curW;
+    const absDiff  = Math.abs(diff);
+    const bodyLogs2 = bodyLogs.filter(l => l.weight != null);
+    if (bodyLogs2.length >= 2) {
+      const oldest  = bodyLogs2[bodyLogs2.length - 1];
+      const weeksPassed = Math.max(1, Math.floor(
+        (new Date(bodyLogs2[0].date) - new Date(oldest.date)) / (1000*60*60*24*7)
+      ));
+      const weeklyChange = (bodyLogs2[0].weight - oldest.weight) / weeksPassed;
+      const weeksLeft = targetP - weeksPassed;
+      const projected = curW + weeklyChange * Math.max(weeksLeft, 0);
+      const onTrack = diff > 0 ? projected >= targetW * 0.97 : projected <= targetW * 1.03;
+
+      insights.push({
+        type: onTrack ? 'good' : 'warn',
+        icon: '🎯',
+        title: `목표체중 ${targetW}kg — 현재 ${curW.toFixed(1)}kg`,
+        body: onTrack
+          ? `주 ${weeklyChange >= 0 ? '+' : ''}${weeklyChange.toFixed(2)}kg 페이스로 목표 달성 예상입니다. ${weeksLeft > 0 ? `남은 기간 ${weeksLeft}주.` : '목표 기간 완료.'}`
+          : `현재 페이스(주 ${weeklyChange >= 0 ? '+' : ''}${weeklyChange.toFixed(2)}kg)로는 목표 달성이 어렵습니다. ${diff > 0 ? '섭취량을 늘리거나 유산소를 줄이세요.' : '칼로리 조절이 필요합니다.'}`,
+        metrics: [
+          { label: '현재 체중', val: curW.toFixed(1)+'kg', color: 'var(--text2)' },
+          { label: '목표 체중', val: targetW+'kg', color: onTrack ? 'var(--accent)' : '#f5a742' },
+          { label: '주간 변화', val: (weeklyChange>=0?'+':'')+weeklyChange.toFixed(2)+'kg', color: onTrack ? 'var(--accent)' : '#f5a742' },
+        ]
+      });
+    } else {
+      insights.push({
+        type: 'info', icon: '🎯',
+        title: `목표체중 ${targetW}kg — ${absDiff.toFixed(1)}kg ${diff > 0 ? '증량' : '감량'} 필요`,
+        body: `체성분을 꾸준히 기록하면 목표 달성 예상 시점을 계산해 드립니다.`,
+        metrics: [
+          { label: '현재', val: curW.toFixed(1)+'kg', color: 'var(--text2)' },
+          { label: '목표', val: targetW+'kg', color: '#42c5f5' },
+          { label: '기간', val: targetP+'주', color: '#42c5f5' },
+        ]
+      });
+    }
+  }
+
+  // ── 8. 체성분 × 1RM 상관관계 ──
+  if (bodyLogs.length >= 2) {
+    const bodyGain = bodyLogs.filter(l => l.muscle != null);
+    if (bodyGain.length >= 2) {
+      const muscleGainTotal = bodyGain[0].muscle - bodyGain[bodyGain.length-1].muscle;
+      const ALL_MUSCLES_C = ['Chest','Back','Shoulder','Legs','Biceps','Triceps'];
+      const rmGains = ALL_MUSCLES_C.map(m => {
+        const ms = getMuscleSessions(m);
+        if (ms.length < 2) return null;
+        const first1RM = calcAnalValue(ms[0], 'rm', m);
+        const last1RM  = calcAnalValue(ms[ms.length-1], 'rm', m);
+        if (!first1RM) return null;
+        return { m, gain: last1RM - first1RM, pct: ((last1RM-first1RM)/first1RM*100) };
+      }).filter(Boolean);
+
+      const avgRMGain = rmGains.length
+        ? rmGains.reduce((s,r)=>s+r.gain,0)/rmGains.length : 0;
+
+      if (muscleGainTotal > 0 && avgRMGain > 0) {
+        insights.push({
+          type: 'good', icon: '🔬',
+          title: '골격근 증가 → 전체 근력 향상 확인',
+          body: `골격근량 <b>+${muscleGainTotal.toFixed(1)}kg</b> 증가하는 동안 평균 1RM이 <b>+${avgRMGain.toFixed(1)}kg</b> 향상됐습니다. 근육 성장과 근력 증가가 함께 일어나고 있습니다.`,
+          metrics: rmGains.filter(r=>r.gain>0).slice(0,3).map(r=>({
+            label: r.m,
+            val: (r.gain>=0?'+':'')+r.gain.toFixed(1)+'kg ('+r.pct.toFixed(1)+'%)',
+            color: 'var(--accent)'
+          }))
+        });
+      } else if (muscleGainTotal <= 0 && avgRMGain > 2) {
+        insights.push({
+          type: 'info', icon: '🔬',
+          title: '신경계 적응으로 근력 향상 중',
+          body: `골격근량 변화 없이 평균 1RM이 <b>+${avgRMGain.toFixed(1)}kg</b> 향상됐습니다. 신경계 효율이 개선되고 있으며, 근육 성장은 조금 더 시간이 필요합니다.`,
+          metrics: rmGains.filter(r=>r.gain>0).slice(0,3).map(r=>({
+            label: r.m, val: '+'+r.gain.toFixed(1)+'kg', color: '#42c5f5'
+          }))
+        });
+      } else if (muscleGainTotal > 0 && avgRMGain <= 0) {
+        insights.push({
+          type: 'warn', icon: '🔬',
+          title: '근육은 늘었지만 근력 정체 — 훈련 강도 점검',
+          body: `골격근량은 증가했지만 평균 1RM이 개선되지 않았습니다. 고중량 훈련 비중을 늘리고 휴식시간을 충분히 확보해보세요.`,
+          metrics: []
+        });
+      }
+    }
+  }
+
   // ── 6. BMR 기반 칼로리 밸런스 ──
   const w = parseFloat(profile.weight) || 0;
   const h = parseFloat(profile.height) || 0;
@@ -6339,8 +6215,7 @@ function calcExStats(ex) {
 }
 
 function requestGoalFeedback(session) {
-  const feedbackEl = document.getElementById('goal-feedback-content');
-  if (!feedbackEl) return;
+
 
   const taggedExercises = session.exercises.filter(ex => ex.focus === 'strength' || ex.focus === 'hypertrophy');
 
