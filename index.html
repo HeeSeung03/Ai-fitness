@@ -2498,6 +2498,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   if (migrated) localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
 
+  // 예시(샘플) 세션 일괄 삭제 요청 반영: id 9001~9008 제거 후, 다시는 주입되지 않도록 플래그 처리
+  const EXAMPLE_SESSION_IDS = [9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008];
+  const beforeCount = sessions.length;
+  sessions = sessions.filter(s => !EXAMPLE_SESSION_IDS.includes(s.id));
+  if (sessions.length !== beforeCount) {
+    localStorage.setItem('fitcore_sessions', JSON.stringify(sessions));
+  }
+  localStorage.setItem('fitcore_examples_injected', 'true');
+
   setToday();
   renderQuickChips();
   loadProfile();
@@ -5704,14 +5713,14 @@ function showToast(msg) {
 
 // ==================== 예시 루틴 주입 ====================
 function injectExampleSessions() {
-  const existing = JSON.parse(localStorage.getItem('fitcore_sessions') || '[]');
-  const exampleIds = [9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008];
-
-  // 이미 주입된 경우 스킵
-  if (exampleIds.every(id => existing.some(s => s.id === id))) {
-    console.log('예시 데이터 이미 존재');
+  // 예시 데이터는 앱 최초 실행 시 단 한 번만 주입합니다.
+  // 이 플래그가 있으면, 사용자가 예시 세션을 삭제했더라도 다시 채워 넣지 않습니다.
+  if (localStorage.getItem('fitcore_examples_injected')) {
+    console.log('예시 데이터는 이미 주입된 적이 있어 다시 추가하지 않습니다');
     return;
   }
+
+  const existing = JSON.parse(localStorage.getItem('fitcore_sessions') || '[]');
 
   const examples = [
   {
@@ -6371,6 +6380,7 @@ function injectExampleSessions() {
 
   existing.sort((a, b) => b.date.localeCompare(a.date));
   localStorage.setItem('fitcore_sessions', JSON.stringify(existing));
+  localStorage.setItem('fitcore_examples_injected', 'true');
   sessions = existing;
 
   renderHistory();
